@@ -56,6 +56,13 @@
     background:transparent;color:var(--ink);border:1px solid var(--hairline-bright);
     border-radius:2px;padding:9px 16px;cursor:pointer;text-transform:uppercase;transition:all .15s}
   .print-btn:hover{border-color:var(--amber);color:var(--amber)}
+  .header-actions{display:flex;align-items:center;gap:12px}
+  .unit-toggle{display:inline-flex;border:1px solid var(--hairline-bright);border-radius:2px;overflow:hidden}
+  .unit-toggle button{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:0.04em;
+    background:transparent;color:var(--ink-dim);border:none;padding:8px 15px;cursor:pointer;transition:all .13s}
+  .unit-toggle button + button{border-left:1px solid var(--hairline-bright)}
+  .unit-toggle button.on{background:var(--amber);color:var(--void);font-weight:700}
+  .unit-toggle button:not(.on):hover{color:var(--ink)}
 
   /* ---- layout grid ---- */
   .cols{display:grid;grid-template-columns:1fr;gap:22px}
@@ -153,7 +160,7 @@
     body{background:#fff;color:#000;padding:0;font-size:10.5px}
     .wrap{max-width:none}
     header{border-color:#000;margin-bottom:10px;padding-bottom:8px}
-    .title-block .eyebrow,.title-block .sub,.print-btn,.legend,.anneal-panel,.curve-axis-note,.phead .hint,footer a{display:none !important}
+    .title-block .eyebrow,.title-block .sub,.print-btn,.unit-toggle,.legend,.anneal-panel,.curve-axis-note,.phead .hint,footer a{display:none !important}
     .title-block h1{font-size:17px;color:#000;margin:0}
     .cols{display:block}
     .panel{background:#fff;border:none;padding:0;margin-bottom:8px}
@@ -193,7 +200,13 @@
       <h1>Firing Schedule</h1>
       <p class="sub">Enter your ramp rates, target temperatures, and holds. Ramp time, segment time, cumulative time, and the clock time each segment finishes are calculated as you type.</p>
     </div>
-    <button class="print-btn" onclick="window.print()">Print for kiln</button>
+    <div class="header-actions">
+      <div class="unit-toggle" role="group" aria-label="Temperature unit">
+        <button type="button" id="unit-f" class="on" onclick="setUnit('F')">°F</button>
+        <button type="button" id="unit-c" onclick="setUnit('C')">°C</button>
+      </div>
+      <button class="print-btn" onclick="window.print()">Print for kiln</button>
+    </div>
   </header>
 
   <!-- job meta -->
@@ -206,7 +219,7 @@
       <div class="field"><label>Glass brand</label>
         <select id="m_brand"><option>Bullseye</option><option>Gaffer</option><option>Other</option></select></div>
       <div class="field"><label>Annealing thickness</label><select id="m_thick"></select></div>
-      <div class="field"><label>Starting kiln temp °F</label><input id="m_start" class="num" type="number" value="75" min="0"></div>
+      <div class="field"><label>Starting kiln temp °<span class="u-lbl">F</span></label><input id="m_start" class="num" type="number" value="75" min="0"></div>
     </div>
   </div>
 
@@ -233,8 +246,8 @@
           <table class="sched">
             <thead><tr>
               <th class="l">Seg</th>
-              <th>Rate<span class="u">°F/hr</span></th>
-              <th>Target<span class="u">°F</span></th>
+              <th>Rate<span class="u">°<span class="u-lbl">F</span>/hr</span></th>
+              <th>Target<span class="u">°<span class="u-lbl">F</span></span></th>
               <th>Hold<span class="u">hr</span></th>
               <th>Hold<span class="u">min</span></th>
               <th>Ramp<span class="u">h:mm</span></th>
@@ -289,7 +302,7 @@
 
   <footer>
     <span>Joshua Hargrave · Kiln Forming Workbook</span>
-    <span>Fahrenheit throughout · <a href="#" onclick="return false">web edition</a></span>
+    <span><span id="foot-unit">Fahrenheit</span> throughout · <a href="#" onclick="return false">web edition</a></span>
   </footer>
 </div>
 
@@ -363,6 +376,56 @@ const N_ROWS = 12;
 /* ---------------- helpers ---------------- */
 const $ = id => document.getElementById(id);
 
+/* ---------------- units ----------------
+   Canonical values live in Fahrenheit on each input's data-f attribute and are
+   updated only when the user actually types. All schedule math reads the
+   canonical F values, so the timing is identical in either unit and toggling
+   F<->C never drifts. The on-screen number is just a rounded display. */
+let UNIT = "F";
+
+function kindOf(el){ return el.dataset.k==="rate" ? "rate" : "temp"; }
+// displayed value (current UNIT) -> canonical Fahrenheit, kept full-precision
+function toF(v, kind){
+  const s = String(v).trim();
+  if(s==="" || isNaN(Number(s))) return s;         // blank or AFAP text: literal
+  const n = Number(s);
+  if(UNIT==="F") return n;
+  return kind==="rate" ? n*9/5 : n*9/5+32;
+}
+// canonical Fahrenheit -> rounded value for display in the current UNIT
+function fromF(f, kind){
+  const s = String(f).trim();
+  if(s==="" || isNaN(Number(s))) return s;
+  const n = Number(s);
+  const out = UNIT==="F" ? n : (kind==="rate" ? n*5/9 : (n-32)*5/9);
+  return String(Math.round(out));
+}
+// canonical F number -> display-unit number (unrounded, for plotting)
+function dispNum(f, kind){
+  const n = Number(f);
+  if(UNIT==="F") return n;
+  return kind==="rate" ? n*5/9 : (n-32)*5/9;
+}
+const dispTemp = f => Math.round(dispNum(f,"temp"));
+
+function unitInputs(){ return document.querySelectorAll('input[data-k="rate"], input[data-k="target"], #m_start'); }
+// call when the user edits a temp/rate field: capture canonical F, then recalc
+function onFieldInput(el){ el.dataset.f = toF(el.value, kindOf(el)); recalc(); }
+// seed data-f from the current (Fahrenheit) defaults at load
+function seedCanonical(){ unitInputs().forEach(el => { el.dataset.f = toF(el.value, kindOf(el)); }); }
+
+function setUnit(u){
+  if(u===UNIT) return;
+  UNIT = u;                                    // canonical data-f is already current
+  unitInputs().forEach(el => { el.value = fromF(el.dataset.f, kindOf(el)); });
+  $("unit-f").classList.toggle("on", UNIT==="F");
+  $("unit-c").classList.toggle("on", UNIT==="C");
+  document.querySelectorAll(".u-lbl").forEach(s => s.textContent = UNIT);
+  $("foot-unit").textContent = UNIT==="F" ? "Fahrenheit" : "Celsius";
+  recalc();
+  renderAnneal();
+}
+
 function isAFAP(raw){
   if(raw==null) return false;
   const s = String(raw).trim();
@@ -423,13 +486,17 @@ function buildRows(){
        <td class="clock l"><span class="cell"></span></td>`;
     tb.appendChild(tr);
   }
-  tb.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",recalc));
+  tb.querySelectorAll("input").forEach(inp=>{
+    const k = inp.dataset.k;
+    if(k==="rate" || k==="target") inp.addEventListener("input", ()=>onFieldInput(inp));
+    else inp.addEventListener("input", recalc);   // hold hr/min: no unit conversion
+  });
 }
 
 /* ---------------- core recalc ---------------- */
 function recalc(){
   const rows = [];
-  const startTemp = parseFloat($("m_start").value)||0;
+  const startTemp = parseFloat($("m_start").dataset.f)||0;
   const base = startDateTime();
   let prevTemp = startTemp;
   let cum = 0;
@@ -441,8 +508,8 @@ function recalc(){
     const tgtEl  = document.querySelector(`input[data-k="target"][data-i="${i}"]`);
     const hhEl   = document.querySelector(`input[data-k="hh"][data-i="${i}"]`);
     const hmEl   = document.querySelector(`input[data-k="hm"][data-i="${i}"]`);
-    const rateRaw = rateEl.value.trim();
-    const tgtRaw  = tgtEl.value.trim();
+    const rateRaw = (rateEl.dataset.f ?? "").trim();
+    const tgtRaw  = (tgtEl.dataset.f ?? "").trim();
     const active = rateRaw!=="" && tgtRaw!=="" && !chainBroken;
 
     const tr = rateEl.closest("tr");
@@ -490,7 +557,7 @@ function recalc(){
   // ----- totals -----
   const total = cum;
   $("r_total").innerHTML = rows.length ? `${fmtDur(total)} <small>· ${total.toFixed(2)}h</small>` : "—";
-  $("r_top").textContent = rows.length ? `${maxTarget}°F` : "—";
+  $("r_top").textContent = rows.length ? `${dispTemp(maxTarget)}°${UNIT}` : "—";
   if(base && rows.length){
     $("r_check").textContent = fmtClock(new Date(base.getTime()+maxAtCum*3600*1000));
     $("r_end").textContent   = fmtClock(new Date(base.getTime()+total*3600*1000));
@@ -508,12 +575,13 @@ function drawCurve(startTemp, maxTarget, total){
   const W=720, H=300, padL=54, padR=18, padT=16, padB=34;
   const plotW = W-padL-padR, plotH = H-padT-padB;
 
-  // rebuild the temperature/time point list from the live inputs
+  // rebuild the point list from canonical Fahrenheit values (times match the table);
+  // temps are labelled in the display unit further below
   const pts = [[0, startTemp]];
   let prevTemp = startTemp, cum = 0, chainBroken=false;
   for(let i=0;i<N_ROWS;i++){
-    const rateRaw=(document.querySelector(`input[data-k="rate"][data-i="${i}"]`).value||"").trim();
-    const tgtRaw =(document.querySelector(`input[data-k="target"][data-i="${i}"]`).value||"").trim();
+    const rateRaw=(document.querySelector(`input[data-k="rate"][data-i="${i}"]`).dataset.f||"").trim();
+    const tgtRaw =(document.querySelector(`input[data-k="target"][data-i="${i}"]`).dataset.f||"").trim();
     if(rateRaw===""||tgtRaw===""){ if(i>0) chainBroken=true; if(chainBroken) break; else continue; }
     if(chainBroken) break;
     const target=Number(tgtRaw);
@@ -553,7 +621,7 @@ function drawCurve(startTemp, maxTarget, total){
     const v = yMax*k/yTicks;
     const y = Y(v);
     grid += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--hairline)" stroke-width="1"/>`;
-    grid += `<text x="${padL-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${Math.round(v)}</text>`;
+    grid += `<text x="${padL-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${dispTemp(v)}</text>`;
   }
   const xTicks = 4;
   for(let k=0;k<=xTicks;k++){
@@ -573,7 +641,7 @@ function drawCurve(startTemp, maxTarget, total){
     line += pts.filter((p,idx)=>idx>0).map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.2" fill="var(--void)" stroke="url(#heat)" stroke-width="1.4"/>`).join("");
   }
 
-  const yLabel = `<text x="14" y="${padT+plotH/2}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="10" fill="var(--ink-faint)" transform="rotate(-90 14 ${padT+plotH/2})" letter-spacing="1">°F</text>`;
+  const yLabel = `<text x="14" y="${padT+plotH/2}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="10" fill="var(--ink-faint)" transform="rotate(-90 14 ${padT+plotH/2})" letter-spacing="1">°${UNIT}</text>`;
 
   svg.innerHTML = `<defs>${grad}</defs>${grid}${area}${line}${yLabel}`;
   $("curve-xmax").textContent = tMax.toFixed(tMax<10?1:0)+" h";
@@ -597,10 +665,13 @@ function renderAnneal(){
   const label = THICKNESSES.find(t=>t[1]===row[0]);
   head.textContent = `${brand} · ${label?label[0]:row[0]+'"'}`;
   const [ ,aT,aSoak,c1r,c1t,c2r,c2t,fr,ft] = row;
+  // chart data is stored in Fahrenheit — convert for display
+  const cT = f => Math.round(UNIT==="F" ? f : (f-32)*5/9);   // temperature
+  const cR = f => Math.round(UNIT==="F" ? f : f*5/9);         // rate (per-hour delta)
   const R = (lbl,val)=>`<tr><td class="lbl">${lbl}</td><td class="val">${val}</td></tr>`;
-  const cool = (r,t)=>`${r} °F/hr <span class="arrow">→</span> ${t}°F`;
+  const cool = (r,t)=>`${cR(r)} °${UNIT}/hr <span class="arrow">→</span> ${cT(t)}°${UNIT}`;
   body.innerHTML =
-    R("Anneal soak", `${aT}°F · ${aSoak} hr`) +
+    R("Anneal soak", `${cT(aT)}°${UNIT} · ${aSoak} hr`) +
     R("1st cooling", cool(c1r,c1t)) +
     R("2nd cooling", cool(c2r,c2t)) +
     R("Final cooling", cool(fr,ft));
@@ -620,9 +691,12 @@ function init(){
   $("s_date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
 
   buildRows();
+  seedCanonical();   // set data-f from the Fahrenheit defaults
 
-  // wire up meta / start / anneal
-  ["m_start","s_date","s_hour","s_min","s_ampm","s_delay"].forEach(id=>$(id).addEventListener("input",recalc));
+  // m_start is a temperature -> route through onFieldInput so its data-f stays current
+  $("m_start").addEventListener("input", ()=>onFieldInput($("m_start")));
+  // start-clock fields: no unit conversion
+  ["s_date","s_hour","s_min","s_ampm","s_delay"].forEach(id=>$(id).addEventListener("input",recalc));
   // keep the anneal panel brand/thickness in sync with the job selectors, but allow override
   $("m_brand").addEventListener("change",()=>{ if($("m_brand").value!=="Other"){$("a_brand").value=$("m_brand").value; renderAnneal();} });
   $("m_thick").addEventListener("change",()=>{ $("a_thick").value=$("m_thick").value; renderAnneal(); });
