@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casting Firing Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#141619;
+    --raised:#1d2025;
+    --raised-2:#22262c;
+    --hairline:#2c3037;
+    --hairline-bright:#3a4049;
+    --ink:#e8e6e1;
+    --ink-dim:#8b9099;
+    --ink-faint:#5f656d;
+    --amber:#ffb040;
+    --amber-fill:rgba(255,176,64,0.09);
+    --amber-line:rgba(255,176,64,0.35);
+    /* heat scale — blackbody glow of hot glass */
+    --h-cold:#5b7089;
+    --h-red:#b23a2e;
+    --h-orange:#e8621f;
+    --h-amber:#f5a623;
+    --h-yellow:#ffd76a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:"Space Grotesk",system-ui,sans-serif;
+    font-size:15px;line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 22px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+  .crumb{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--ink-dim);text-decoration:none;margin-bottom:14px;transition:color .15s}
+  .crumb:hover{color:var(--amber)}
+  @media print{.crumb{display:none}}
+
+  /* ---- header ---- */
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;
+    padding-bottom:16px;border-bottom:1px solid var(--hairline);margin-bottom:22px}
+  .title-block h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin:0;line-height:1.05}
+  .title-block .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 6px}
+  .title-block .sub{color:var(--ink-dim);font-size:13.5px;margin-top:5px;max-width:52ch}
+  .print-btn{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:0.08em;
+    background:transparent;color:var(--ink);border:1px solid var(--hairline-bright);
+    border-radius:2px;padding:9px 16px;cursor:pointer;text-transform:uppercase;transition:all .15s}
+  .print-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+  /* ---- layout grid ---- */
+  .cols{display:grid;grid-template-columns:1fr;gap:22px}
+  @media(min-width:1000px){.cols{grid-template-columns:minmax(0,1fr) 360px}}
+
+  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px}
+  .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
+  .phead .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);letter-spacing:0.1em}
+  .phead h2{font-size:14px;font-weight:600;letter-spacing:0.01em;margin:0;text-transform:uppercase}
+  .phead .hint{margin-left:auto;font-size:11.5px;color:var(--ink-faint)}
+
+  /* ---- meta inputs ---- */
+  .meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 16px}
+  @media(min-width:560px){.meta-grid{grid-template-columns:repeat(3,1fr)}}
+  .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .field label{font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim)}
+  input,select{
+    font-family:"JetBrains Mono",monospace;font-size:13.5px;color:var(--ink);
+    background:var(--amber-fill);border:1px solid var(--hairline-bright);border-radius:2px;
+    padding:7px 8px;width:100%;transition:border-color .12s,box-shadow .12s}
+  input:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-line)}
+  select{cursor:pointer;-webkit-appearance:none;appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:26px}
+  input::placeholder{color:var(--ink-faint)}
+
+  /* ---- start-time row ---- */
+  .start-row{display:grid;gap:12px 14px;grid-template-columns:repeat(2,1fr);margin-top:4px}
+  @media(min-width:640px){.start-row{grid-template-columns:1.4fr .7fr .7fr .8fr .9fr}}
+
+  /* ---- readout strip ---- */
+  .readouts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hairline);
+    border:1px solid var(--hairline);border-radius:4px;overflow:hidden;margin-top:2px}
+  .ro{background:var(--raised);padding:12px 14px}
+  .ro .k{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:5px}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:16px;font-weight:500;color:var(--ink);line-height:1.15}
+  .ro .v small{font-size:11px;color:var(--ink-dim);font-weight:400}
+  .ro.hot .v{color:var(--h-yellow)}
+
+  /* ---- schedule table ---- */
+  .sched-wrap{overflow-x:auto;margin:0 -2px}
+  table.sched{border-collapse:collapse;width:100%;font-family:"JetBrains Mono",monospace;font-size:13px;min-width:720px}
+  table.sched th{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:600;letter-spacing:0.04em;
+    text-transform:uppercase;color:var(--ink-dim);text-align:right;padding:0 9px 9px;border-bottom:1px solid var(--hairline-bright);white-space:nowrap;vertical-align:bottom}
+  table.sched th.l,table.sched td.l{text-align:left}
+  table.sched th .u{display:block;color:var(--ink-faint);font-weight:400;font-size:9px;letter-spacing:0.02em}
+  table.sched td{text-align:right;padding:0;border-bottom:1px solid var(--hairline);white-space:nowrap}
+  table.sched td .cell{padding:3px 9px}
+  table.sched td.seg{color:var(--ink-faint);padding:3px 9px;text-align:left;width:34px}
+  table.sched tr.blankrow td{color:var(--ink-faint)}
+  /* input cells inside table */
+  table.sched td.inp{padding:0}
+  table.sched td.inp input{border:none;border-radius:0;background:var(--amber-fill);text-align:right;
+    padding:5px 9px;font-size:13px;box-shadow:none}
+  table.sched td.inp input:focus{background:rgba(255,176,64,0.16);box-shadow:inset 0 0 0 1px var(--amber-line)}
+  table.sched td.calc .cell{color:var(--ink)}
+  table.sched td.dim .cell{color:var(--ink-faint)}
+  td.clock .cell{color:var(--ink)}
+  .afap-tag{color:var(--h-orange)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:11.5px;color:var(--ink-dim)}
+  .legend .swatch{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px;border:1px solid var(--hairline-bright)}
+  .legend .swatch.inp{background:var(--amber-fill);border-color:var(--amber-line)}
+  .legend .swatch.out{background:var(--raised-2)}
+
+  /* ---- firing curve ---- */
+  .curve-panel{padding-bottom:14px}
+  .curve-box{position:relative;width:100%;background:
+    linear-gradient(0deg,rgba(255,255,255,0.015),rgba(255,255,255,0.015));border-radius:3px}
+  svg.curve{display:block;width:100%;height:auto}
+  .curve-axis-note{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);
+    font-family:"JetBrains Mono",monospace;margin-top:6px}
+
+  /* ---- anneal reference ---- */
+  .anneal-note{font-size:11.5px;color:var(--ink-dim);margin-bottom:12px;line-height:1.5}
+  .anneal-note b{color:var(--amber);font-weight:600}
+  .anneal-pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  table.anneal{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:12.5px}
+  table.anneal td{padding:6px 4px;border-bottom:1px solid var(--hairline)}
+  table.anneal tr:last-child td{border-bottom:none}
+  table.anneal td.lbl{color:var(--ink-dim);font-family:"Space Grotesk",sans-serif;font-size:11.5px}
+  table.anneal td.val{text-align:right;color:var(--ink)}
+  table.anneal td.val .arrow{color:var(--ink-faint)}
+  .anneal-head{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--amber);
+    padding:8px 10px;background:rgba(255,176,64,0.06);border:1px solid var(--amber-line);border-radius:3px;margin-bottom:10px;text-align:center}
+
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--hairline);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    font-size:11.5px;color:var(--ink-faint);font-family:"JetBrains Mono",monospace}
+  footer a{color:var(--ink-dim)}
+
+  /* ===================== PRINT ===================== */
+  @media print{
+    @page{size:letter;margin:0.45in}
+    body{background:#fff;color:#000;padding:0;font-size:10.5px}
+    .wrap{max-width:none}
+    header{border-color:#000;margin-bottom:10px;padding-bottom:8px}
+    .title-block .eyebrow,.title-block .sub,.print-btn,.legend,.anneal-panel,.curve-axis-note,.phead .hint,footer a{display:none !important}
+    .title-block h1{font-size:17px;color:#000;margin:0}
+    .cols{display:block}
+    .panel{background:#fff;border:none;padding:0;margin-bottom:8px}
+    .panel + .panel{margin-top:6px}
+    .phead{margin-bottom:5px;border-bottom:1px solid #000}
+    /* cap curve so job+start+segments+curve+totals all fit one page */
+    .curve-box{height:2.05in;overflow:hidden}
+    svg.curve{height:100%;width:100%}
+    .readouts{grid-template-columns:repeat(4,1fr)}
+    .phead h2{color:#000;font-size:11px}.phead .n{color:#555}
+    input,select{background:#fff !important;border:none;color:#000;padding:1px 3px;font-size:10px}
+    .meta-grid,.start-row{gap:4px 10px}
+    .field label{color:#333}
+    .readouts{background:#000;border-color:#000;margin-bottom:8px}
+    .ro{background:#fff;padding:5px 8px}
+    .ro .k{color:#333}.ro .v{font-size:12px;color:#000}.ro.hot .v{color:#000;font-weight:700}
+    table.sched{min-width:0;font-size:9.5px}
+    table.sched th{color:#000;border-color:#000;padding:0 5px 4px}
+    table.sched td{border-color:#bbb}
+    table.sched td .cell,table.sched td.inp input,table.sched td.seg{padding:2px 5px;color:#000}
+    table.sched td.dim .cell{color:#888}
+    .afap-tag{color:#000;font-weight:700}
+    svg.curve{filter:none}
+    .curve-box{background:#fff}
+    footer{color:#555;border-color:#000;margin-top:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="index.html" class="crumb">‹ Index</a>
+
+  <header>
+    <div class="title-block">
+      <p class="eyebrow">Kiln Forming Workbook · Casting</p>
+      <h1>Firing Schedule</h1>
+      <p class="sub">Enter your ramp rates, target temperatures, and holds. Ramp time, segment time, cumulative time, and the clock time each segment finishes are calculated as you type.</p>
+    </div>
+    <button class="print-btn" onclick="window.print()">Print for kiln</button>
+  </header>
+
+  <!-- job meta -->
+  <div class="panel" style="margin-bottom:22px">
+    <div class="phead"><span class="n">00</span><h2>Job</h2></div>
+    <div class="meta-grid">
+      <div class="field"><label>Project name</label><input id="m_name" type="text" placeholder="Project 1" value="Project 1"></div>
+      <div class="field"><label>Kiln #</label><input id="m_kiln" type="text" placeholder="—"></div>
+      <div class="field"><label>User program #</label><input id="m_prog" type="text" placeholder="—"></div>
+      <div class="field"><label>Glass brand</label>
+        <select id="m_brand"><option>Bullseye</option><option>Gaffer</option><option>Other</option></select></div>
+      <div class="field"><label>Annealing thickness</label><select id="m_thick"></select></div>
+      <div class="field"><label>Starting kiln temp °F</label><input id="m_start" class="num" type="number" value="75" min="0"></div>
+    </div>
+  </div>
+
+  <!-- start clock -->
+  <div class="panel" style="margin-bottom:22px">
+    <div class="phead"><span class="n">01</span><h2>Start time</h2>
+      <span class="hint">clock times below are figured from this</span></div>
+    <div class="start-row">
+      <div class="field"><label>Start date</label><input id="s_date" type="date"></div>
+      <div class="field"><label>Hour (1–12)</label><input id="s_hour" type="number" min="1" max="12" value="8"></div>
+      <div class="field"><label>Minute</label><input id="s_min" type="number" min="0" max="59" value="0"></div>
+      <div class="field"><label>AM / PM</label><select id="s_ampm"><option>AM</option><option selected>PM</option></select></div>
+      <div class="field"><label>Delay (hrs)</label><input id="s_delay" type="number" min="0" step="0.5" value="0"></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <!-- LEFT: schedule + curve -->
+    <div>
+      <div class="panel" style="margin-bottom:22px">
+        <div class="phead"><span class="n">02</span><h2>Segments</h2>
+          <span class="hint">amber cells are inputs · everything else calculates</span></div>
+        <div class="sched-wrap">
+          <table class="sched">
+            <thead><tr>
+              <th class="l">Seg</th>
+              <th>Rate<span class="u">°F/hr</span></th>
+              <th>Target<span class="u">°F</span></th>
+              <th>Hold<span class="u">hr</span></th>
+              <th>Hold<span class="u">min</span></th>
+              <th>Ramp<span class="u">h:mm</span></th>
+              <th>Segment<span class="u">h:mm</span></th>
+              <th>Cumulative<span class="u">h:mm</span></th>
+              <th class="l">Clock complete</th>
+            </tr></thead>
+            <tbody id="segbody"></tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <span><span class="swatch inp"></span>Input cell</span>
+          <span><span class="swatch out"></span>Calculated</span>
+          <span><span class="afap-tag">AFAP</span> = as fast as possible — type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+        </div>
+      </div>
+
+      <div class="panel curve-panel">
+        <div class="phead"><span class="n">03</span><h2>Firing curve</h2>
+          <span class="hint">temperature over cumulative time</span></div>
+        <div class="curve-box"><svg class="curve" id="curve" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: totals + anneal reference -->
+    <div>
+      <div class="panel" style="margin-bottom:22px">
+        <div class="phead"><span class="n">04</span><h2>Totals</h2></div>
+        <div class="readouts">
+          <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
+          <div class="ro hot"><div class="k">Top temp</div><div class="v" id="r_top">—</div></div>
+          <div class="ro"><div class="k">Check at top temp</div><div class="v" id="r_check">—</div></div>
+          <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
+        </div>
+      </div>
+
+      <div class="panel anneal-panel">
+        <div class="phead"><span class="n">05</span><h2>Anneal reference</h2>
+          <span class="hint">screen only</span></div>
+        <p class="anneal-note">Published anneal schedule for your <b>brand</b> and <b>thickness</b>, rounded up to the next listed thickness. This is a readout — it does <b>not</b> change the segments above. Copy the values in yourself if you want to use them.</p>
+        <div class="anneal-pick">
+          <div class="field"><label>Brand</label>
+            <select id="a_brand"><option>Bullseye</option><option>Gaffer</option></select></div>
+          <div class="field"><label>Thickness</label><select id="a_thick"></select></div>
+        </div>
+        <div id="a_head" class="anneal-head">—</div>
+        <table class="anneal"><tbody id="a_body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Joshua Hargrave · Kiln Forming Workbook</span>
+    <span>Fahrenheit throughout · <a href="#" onclick="return false">web edition</a></span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- reference data ---------------- */
+// thickness options used across the workbook (label + inch value)
+const THICKNESSES = [
+  ["0.25\"/6mm",0.25],["0.5\"/12mm",0.5],["0.75\"/19mm",0.75],["1\"/25mm",1],
+  ["1.5\"/38mm",1.5],["2\"/50mm",2],["2.5\"/63mm",2.5],["3\"/75mm",3],
+  ["3.5\"/88mm",3.5],["4\"/100mm",4],["4.5\"/113mm",4.5],["5\"/125mm",5],
+  ["5.5\"/138mm",5.5],["6\"/150mm",6],["6.5\"/165mm",6.5],["7\"/175mm",7],
+  ["7.5\"/190mm",7.5],["8\"/200mm",8],["8.5\"/215mm",8.5],["9\"/225mm",9],
+  ["9.5\"/240mm",9.5],["10\"/250mm",10]
+];
+
+// anneal charts — [inch, annealTemp, annealSoakHrs, c1rate,c1temp, c2rate,c2temp, finalRate,finalTemp]
+const ANNEAL = {
+  Bullseye:[
+    [0.25,900,1, 150,800, 270,700, 900,70],
+    [0.5, 900,2, 100,800, 180,700, 600,70],
+    [0.75,900,3,  45,800,  81,700, 270,70],
+    [1,   900,4,  27,800,  49,700, 162,70],
+    [1.5, 900,6,  12,800,  22,700,  72,70],
+    [2,   900,8, 6.8,800,  12,700,  41,70],
+    [2.5, 900,10,4.3,800,   8,700,  26,70],
+    [3,   900,12,  3,800, 5.4,700,  18,70],
+    [4,   900,16,1.7,800, 3.1,700,  10,70],
+    [6,   900,24,0.75,800,1.3,700, 4.5,70],
+    [8,   900,32,0.42,800,0.76,700,2.5,70]
+  ],
+  Gaffer:[
+    [0.5, 806,2, 120,680, 240,590, 720,70],
+    [0.75,806,3,  52,680, 104,590, 312,70],
+    [1,   806,4,  29,680,  58,590, 174,70],
+    [1.5, 806,6,  13,680,  26,590,  78,70],
+    [2,   806,8, 7.8,680,15.6,590,46.8,70],
+    [2.5, 806,10,5.2,644,10.4,554,31.2,70],
+    [3,   806,12,3.3,644, 6.6,554,19.8,70],
+    [3.5, 806,14,2.5,644,   5,554,  15,70],
+    [4,   806,16,1.8,644, 3.6,554,10.8,70],
+    [4.5, 806,18,1.6,644, 3.2,554, 9.6,70],
+    [5,   806,20,1.3,644, 2.6,554, 7.8,70],
+    [5.5, 806,22,1.1,644, 2.2,554, 6.6,70],
+    [6,   806,24,0.9,608, 1.8,518, 5.4,70],
+    [6.5, 806,26,0.7,608, 1.4,518, 4.2,70],
+    [7,   806,28,0.6,608, 1.2,518, 3.6,70],
+    [7.5, 806,30,0.5,608,   1,518,   3,70],
+    [8,   806,32,0.47,608,0.94,518,2.8,70],
+    [8.5, 806,34,0.41,608,0.8,518, 2.4,70],
+    [9,   806,36,0.35,608,0.7,518, 2.1,70],
+    [9.5, 806,38,0.32,608,0.64,518,1.9,70],
+    [10,  806,40,0.29,608,0.58,518,1.74,70]
+  ]
+};
+
+// default casting schedule (matches the workbook example)
+const DEFAULT_SEGMENTS = [
+  {rate:"200",  target:"190", hh:"3", hm:"0"},
+  {rate:"100",  target:"400", hh:"3", hm:"0"},
+  {rate:"200",  target:"1250",hh:"1", hm:"0"},
+  {rate:"600",  target:"1525",hh:"2", hm:"0"},
+  {rate:"9999", target:"900", hh:"4", hm:"0"},
+  {rate:"30",   target:"800", hh:"0", hm:"0"},
+  {rate:"60",   target:"700", hh:"0", hm:"0"},
+  {rate:"160",  target:"150", hh:"0", hm:"0"}
+];
+const N_ROWS = 12;
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+
+function isAFAP(raw){
+  if(raw==null) return false;
+  const s = String(raw).trim();
+  if(s==="") return false;
+  return isNaN(Number(s)); // any non-numeric text (e.g. "AFAP") ramps as fast as possible
+}
+function rampHours(rate, target, prevTemp){
+  // matches: IF(rate numeric, ABS(target-prev)/rate, 0)
+  const r = Number(rate);
+  if(isNaN(r) || r===0) return 0;      // AFAP text or 0 -> instantaneous
+  return Math.abs(target - prevTemp)/r;
+}
+function fmtHM(hrs){
+  if(hrs==null || isNaN(hrs)) return "";
+  const totalMin = Math.round(hrs*60);
+  const h = Math.floor(totalMin/60), m = totalMin%60;
+  return h + ":" + String(m).padStart(2,"0");
+}
+function fmtDur(hrs){ // human total, e.g. "28h 53m"
+  const totalMin = Math.round(hrs*60);
+  const h = Math.floor(totalMin/60), m = totalMin%60;
+  return h + "h " + String(m).padStart(2,"0") + "m";
+}
+function fmtClock(date){
+  if(!date || isNaN(date.getTime())) return "";
+  return date.toLocaleString([], {weekday:"short",month:"short",day:"numeric",
+    hour:"numeric",minute:"2-digit"});
+}
+function startDateTime(){
+  const dv = $("s_date").value;
+  if(!dv) return null;
+  let hr = parseInt($("s_hour").value,10); if(isNaN(hr)) hr=12;
+  let mn = parseInt($("s_min").value,10);  if(isNaN(mn)) mn=0;
+  const pm = $("s_ampm").value==="PM";
+  let h24 = (hr%12) + (pm?12:0);           // 12AM->0, 12PM->12, matches TIME(MOD(h,12)+IF(PM,12,0))
+  const [Y,M,D] = dv.split("-").map(Number);
+  const base = new Date(Y, M-1, D, h24, mn, 0);
+  const delay = parseFloat($("s_delay").value)||0;
+  return new Date(base.getTime() + delay*3600*1000);
+}
+
+/* ---------------- build segment rows ---------------- */
+function buildRows(){
+  const tb = $("segbody");
+  tb.innerHTML = "";
+  for(let i=0;i<N_ROWS;i++){
+    const d = DEFAULT_SEGMENTS[i] || {rate:"",target:"",hh:"",hm:""};
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td class="seg">${i+1}</td>
+       <td class="inp"><input data-k="rate"   data-i="${i}" type="text" value="${d.rate}"   placeholder="—"></td>
+       <td class="inp"><input data-k="target" data-i="${i}" type="text" value="${d.target}" placeholder="—"></td>
+       <td class="inp"><input data-k="hh"     data-i="${i}" type="text" value="${d.hh}"     placeholder="0"></td>
+       <td class="inp"><input data-k="hm"     data-i="${i}" type="text" value="${d.hm}"     placeholder="0"></td>
+       <td class="calc ramp"><span class="cell"></span></td>
+       <td class="calc segt"><span class="cell"></span></td>
+       <td class="calc cum"><span class="cell"></span></td>
+       <td class="clock l"><span class="cell"></span></td>`;
+    tb.appendChild(tr);
+  }
+  tb.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",recalc));
+}
+
+/* ---------------- core recalc ---------------- */
+function recalc(){
+  const rows = [];
+  const startTemp = parseFloat($("m_start").value)||0;
+  const base = startDateTime();
+  let prevTemp = startTemp;
+  let cum = 0;
+  let chainBroken = false;
+  let maxTarget = -Infinity, maxAtCum = null;
+
+  for(let i=0;i<N_ROWS;i++){
+    const rateEl = document.querySelector(`input[data-k="rate"][data-i="${i}"]`);
+    const tgtEl  = document.querySelector(`input[data-k="target"][data-i="${i}"]`);
+    const hhEl   = document.querySelector(`input[data-k="hh"][data-i="${i}"]`);
+    const hmEl   = document.querySelector(`input[data-k="hm"][data-i="${i}"]`);
+    const rateRaw = rateEl.value.trim();
+    const tgtRaw  = tgtEl.value.trim();
+    const active = rateRaw!=="" && tgtRaw!=="" && !chainBroken;
+
+    const tr = rateEl.closest("tr");
+    const rampCell = tr.querySelector(".ramp .cell");
+    const segCell  = tr.querySelector(".segt .cell");
+    const cumCell  = tr.querySelector(".cum .cell");
+    const clkCell  = tr.querySelector(".clock .cell");
+
+    if(!active){
+      // a missing rate/target breaks the running chain (mirrors the sheet)
+      if(rateRaw!=="" || tgtRaw!=="") {} else if(i>0) chainBroken = true;
+      rampCell.textContent = ""; segCell.textContent=""; cumCell.textContent=""; clkCell.textContent="";
+      tr.classList.add("blankrow");
+      // if row has partial data but chain broke, still blank
+      if(rateRaw==="" && tgtRaw==="") chainBroken = true;
+      continue;
+    }
+    tr.classList.remove("blankrow");
+
+    const target = Number(tgtRaw);
+    const hh = parseFloat(hhEl.value)||0;
+    const hm = parseFloat(hmEl.value)||0;
+    const rh = rampHours(rateRaw, target, prevTemp);
+    const segT = rh + hh + hm/60;
+    const cumBefore = cum;
+    cum += segT;
+
+    // ramp cell — show AFAP tag when applicable
+    if(isAFAP(rateRaw)){
+      rampCell.innerHTML = `<span class="afap-tag">AFAP</span>`;
+    } else {
+      rampCell.textContent = fmtHM(rh);
+    }
+    segCell.textContent = fmtHM(segT);
+    cumCell.textContent = fmtHM(cum);
+    clkCell.textContent = base ? fmtClock(new Date(base.getTime()+cum*3600*1000)) : "—";
+
+    // track top temp + when we reach it (end of its ramp)
+    if(target > maxTarget){ maxTarget = target; maxAtCum = cumBefore + rh; }
+
+    rows.push({target, cumEnd:cum});
+    prevTemp = target;
+  }
+
+  // ----- totals -----
+  const total = cum;
+  $("r_total").innerHTML = rows.length ? `${fmtDur(total)} <small>· ${total.toFixed(2)}h</small>` : "—";
+  $("r_top").textContent = rows.length ? `${maxTarget}°F` : "—";
+  if(base && rows.length){
+    $("r_check").textContent = fmtClock(new Date(base.getTime()+maxAtCum*3600*1000));
+    $("r_end").textContent   = fmtClock(new Date(base.getTime()+total*3600*1000));
+  } else {
+    $("r_check").textContent = "—";
+    $("r_end").textContent   = "—";
+  }
+
+  drawCurve(startTemp, rows.length ? maxTarget : 0, total);
+}
+
+/* ---------------- firing curve ---------------- */
+function drawCurve(startTemp, maxTarget, total){
+  const svg = $("curve");
+  const W=720, H=300, padL=54, padR=18, padT=16, padB=34;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+
+  // rebuild the temperature/time point list from the live inputs
+  const pts = [[0, startTemp]];
+  let prevTemp = startTemp, cum = 0, chainBroken=false;
+  for(let i=0;i<N_ROWS;i++){
+    const rateRaw=(document.querySelector(`input[data-k="rate"][data-i="${i}"]`).value||"").trim();
+    const tgtRaw =(document.querySelector(`input[data-k="target"][data-i="${i}"]`).value||"").trim();
+    if(rateRaw===""||tgtRaw===""){ if(i>0) chainBroken=true; if(chainBroken) break; else continue; }
+    if(chainBroken) break;
+    const target=Number(tgtRaw);
+    const hh=parseFloat(document.querySelector(`input[data-k="hh"][data-i="${i}"]`).value)||0;
+    const hm=parseFloat(document.querySelector(`input[data-k="hm"][data-i="${i}"]`).value)||0;
+    const rh=rampHours(rateRaw,target,prevTemp);
+    cum+=rh; pts.push([cum,target]);          // end of ramp
+    const hold=hh+hm/60;
+    if(hold>0){ cum+=hold; pts.push([cum,target]); } // end of hold (flat)
+    prevTemp=target;
+  }
+
+  const tMax = Math.max(total, 1);
+  const yMax = Math.max(maxTarget, startTemp, 1) * 1.06;
+  const X = t => padL + (t/tMax)*plotW;
+  const Y = v => padT + plotH - (v/yMax)*plotH;
+
+  // heat gradient stops mapped to temperature bands
+  const grad = `
+    <linearGradient id="heat" x1="0" y1="${padT+plotH}" x2="0" y2="${padT}" gradientUnits="userSpaceOnUse">
+      <stop offset="0"    stop-color="var(--h-cold)"/>
+      <stop offset="0.42" stop-color="var(--h-red)"/>
+      <stop offset="0.66" stop-color="var(--h-orange)"/>
+      <stop offset="0.85" stop-color="var(--h-amber)"/>
+      <stop offset="1"    stop-color="var(--h-yellow)"/>
+    </linearGradient>
+    <linearGradient id="heatfill" x1="0" y1="${padT+plotH}" x2="0" y2="${padT}" gradientUnits="userSpaceOnUse">
+      <stop offset="0"    stop-color="var(--h-cold)"  stop-opacity="0.02"/>
+      <stop offset="0.66" stop-color="var(--h-orange)" stop-opacity="0.10"/>
+      <stop offset="1"    stop-color="var(--h-yellow)" stop-opacity="0.20"/>
+    </linearGradient>`;
+
+  // gridlines
+  let grid = "";
+  const yTicks = 4;
+  for(let k=0;k<=yTicks;k++){
+    const v = yMax*k/yTicks;
+    const y = Y(v);
+    grid += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--hairline)" stroke-width="1"/>`;
+    grid += `<text x="${padL-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${Math.round(v)}</text>`;
+  }
+  const xTicks = 4;
+  for(let k=0;k<=xTicks;k++){
+    const t = tMax*k/xTicks, x=X(t);
+    grid += `<line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${padT+plotH}" stroke="var(--hairline)" stroke-width="1" opacity="0.5"/>`;
+    grid += `<text x="${x.toFixed(1)}" y="${padT+plotH+16}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${t.toFixed(t<10?1:0)}</text>`;
+  }
+
+  // path
+  let line="", area="";
+  if(pts.length>1){
+    const d = pts.map((p,idx)=>`${idx?"L":"M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(" ");
+    line = `<path d="${d}" fill="none" stroke="url(#heat)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const af = d + ` L${X(pts[pts.length-1][0]).toFixed(1)} ${Y(0).toFixed(1)} L${X(0).toFixed(1)} ${Y(0).toFixed(1)} Z`;
+    area = `<path d="${af}" fill="url(#heatfill)" stroke="none"/>`;
+    // segment target dots
+    line += pts.filter((p,idx)=>idx>0).map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.2" fill="var(--void)" stroke="url(#heat)" stroke-width="1.4"/>`).join("");
+  }
+
+  const yLabel = `<text x="14" y="${padT+plotH/2}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="10" fill="var(--ink-faint)" transform="rotate(-90 14 ${padT+plotH/2})" letter-spacing="1">°F</text>`;
+
+  svg.innerHTML = `<defs>${grad}</defs>${grid}${area}${line}${yLabel}`;
+  $("curve-xmax").textContent = tMax.toFixed(tMax<10?1:0)+" h";
+}
+
+/* ---------------- anneal reference ---------------- */
+function lookupAnneal(brand, inch){
+  const chart = ANNEAL[brand];
+  if(!chart) return null;
+  // round UP to next listed thickness; cap at max
+  let row = chart.find(r=>r[0] >= inch);
+  if(!row) row = chart[chart.length-1];
+  return row;
+}
+function renderAnneal(){
+  const brand = $("a_brand").value;
+  const inch = parseFloat($("a_thick").value);
+  const row = lookupAnneal(brand, inch);
+  const head=$("a_head"), body=$("a_body");
+  if(!row){ head.textContent="—"; body.innerHTML=""; return; }
+  const label = THICKNESSES.find(t=>t[1]===row[0]);
+  head.textContent = `${brand} · ${label?label[0]:row[0]+'"'}`;
+  const [ ,aT,aSoak,c1r,c1t,c2r,c2t,fr,ft] = row;
+  const R = (lbl,val)=>`<tr><td class="lbl">${lbl}</td><td class="val">${val}</td></tr>`;
+  const cool = (r,t)=>`${r} °F/hr <span class="arrow">→</span> ${t}°F`;
+  body.innerHTML =
+    R("Anneal soak", `${aT}°F · ${aSoak} hr`) +
+    R("1st cooling", cool(c1r,c1t)) +
+    R("2nd cooling", cool(c2r,c2t)) +
+    R("Final cooling", cool(fr,ft));
+}
+
+/* ---------------- init ---------------- */
+function fillThicknessSelect(sel, defInch){
+  sel.innerHTML = THICKNESSES.map(t=>`<option value="${t[1]}">${t[0]}</option>`).join("");
+  sel.value = String(defInch);
+}
+function init(){
+  // thickness dropdowns
+  fillThicknessSelect($("m_thick"),1);
+  fillThicknessSelect($("a_thick"),1);
+  // default start date = today
+  const t=new Date();
+  $("s_date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+
+  buildRows();
+
+  // wire up meta / start / anneal
+  ["m_start","s_date","s_hour","s_min","s_ampm","s_delay"].forEach(id=>$(id).addEventListener("input",recalc));
+  // keep the anneal panel brand/thickness in sync with the job selectors, but allow override
+  $("m_brand").addEventListener("change",()=>{ if($("m_brand").value!=="Other"){$("a_brand").value=$("m_brand").value; renderAnneal();} });
+  $("m_thick").addEventListener("change",()=>{ $("a_thick").value=$("m_thick").value; renderAnneal(); });
+  ["a_brand","a_thick"].forEach(id=>$(id).addEventListener("change",renderAnneal));
+
+  recalc();
+  renderAnneal();
+}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>

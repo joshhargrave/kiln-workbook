@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiln Forming Workbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#141619; --raised:#1d2025; --raised-2:#22262c;
+    --hairline:#2c3037; --hairline-bright:#3a4049;
+    --ink:#e8e6e1; --ink-dim:#8b9099; --ink-faint:#5f656d;
+    --amber:#ffb040; --amber-fill:rgba(255,176,64,0.09); --amber-line:rgba(255,176,64,0.35);
+    --h-cold:#5b7089; --h-red:#b23a2e; --h-orange:#e8621f; --h-amber:#f5a623; --h-yellow:#ffd76a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--void);color:var(--ink);
+    font-family:"Space Grotesk",system-ui,sans-serif;font-size:15px;line-height:1.45;
+    -webkit-font-smoothing:antialiased;padding:44px 22px 60px}
+  .wrap{max-width:1040px;margin:0 auto}
+  .mono{font-family:"JetBrains Mono",monospace}
+
+  .hero{margin-bottom:44px}
+  .hero .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.24em;
+    text-transform:uppercase;color:var(--ink-dim);margin:0 0 12px}
+  .hero h1{font-size:clamp(32px,6vw,52px);font-weight:700;letter-spacing:-0.025em;line-height:1;margin:0}
+  .heatbar{height:4px;width:180px;margin:20px 0 18px;border-radius:2px;
+    background:linear-gradient(90deg,var(--h-cold),var(--h-red),var(--h-orange),var(--h-amber),var(--h-yellow))}
+  .hero .sub{color:var(--ink-dim);font-size:15.5px;max-width:60ch;margin:0}
+  .hero .sub b{color:var(--ink);font-weight:500}
+
+  .group{margin-bottom:34px}
+  .group-head{display:flex;align-items:baseline;gap:12px;margin:0 0 15px;
+    padding-bottom:9px;border-bottom:1px solid var(--hairline)}
+  .group-head h2{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:500;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--ink);margin:0}
+  .group-head .count{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);margin-left:auto}
+
+  .cards{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:620px){.cards{grid-template-columns:1fr 1fr}}
+
+  .card{position:relative;display:block;text-decoration:none;color:inherit;
+    background:var(--raised);border:1px solid var(--hairline);border-radius:5px;
+    padding:17px 18px 16px 20px;overflow:hidden;transition:transform .16s,border-color .16s,background .16s}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--hairline-bright)}
+  .card.live::before{background:linear-gradient(180deg,var(--h-yellow),var(--h-orange),var(--h-red))}
+  .card.live{cursor:pointer}
+  .card.live:hover{transform:translateY(-2px);border-color:var(--amber-line);background:var(--raised-2)}
+  .card.live:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .card.soon{opacity:0.62}
+
+  .card-top{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+  .card-top h3{font-size:17px;font-weight:600;letter-spacing:-0.01em;margin:0}
+  .tag{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;
+    padding:3px 7px;border-radius:2px;margin-left:auto;white-space:nowrap}
+  .tag.open{color:var(--void);background:var(--amber);font-weight:700}
+  .tag.soon{color:var(--ink-faint);border:1px solid var(--hairline-bright)}
+  .card p{font-size:13px;line-height:1.5;color:var(--ink-dim);margin:0}
+
+  footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--hairline);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-faint)}
+
+  @media(prefers-reduced-motion:reduce){.card{transition:none}.card.live:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Joshua Hargrave</p>
+    <h1>Kiln Forming Workbook</h1>
+    <div class="heatbar" aria-hidden="true"></div>
+    <p class="sub">The Excel workbook, online. Calculators and reference charts for kiln <b>casting</b> and <b>fusing</b> &mdash; enter your numbers, get the schedule. Fahrenheit throughout.</p>
+  </header>
+
+  <section class="group">
+    <div class="group-head"><h2>Schedules</h2><span class="count">1 of 2 live</span></div>
+    <div class="cards">
+      <a class="card live" href="firing-schedule.html">
+        <div class="card-top"><h3>Firing Schedule</h3><span class="tag open">Open</span></div>
+        <p>Casting firing schedule. Enter rates, temps, and holds; it computes ramp time, segment time, cumulative time, and the clock time each segment finishes. Prints to one page for the kiln.</p>
+      </a>
+      <div class="card soon">
+        <div class="card-top"><h3>Fusing Schedules</h3><span class="tag soon">Soon</span></div>
+        <p>Generates a slump, tack, contour, full fuse, or fire polish schedule from glass type and thickness. Not for casting.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head"><h2>Molds &amp; glass</h2><span class="count">3 tools</span></div>
+    <div class="cards">
+      <div class="card soon">
+        <div class="card-top"><h3>Investment Calculator</h3><span class="tag soon">Soon</span></div>
+        <p>Model volume and plaster/silica by layer, for spheres, cylinders, and boxes.</p>
+      </div>
+      <div class="card soon">
+        <div class="card-top"><h3>Glass Calculator</h3><span class="tag soon">Soon</span></div>
+        <p>How much glass to load from the water measurement, in grams and pounds, for Bullseye and Gaffer, with a flowerpot allowance.</p>
+      </div>
+      <div class="card soon">
+        <div class="card-top"><h3>Investment Ratio</h3><span class="tag soon">Soon</span></div>
+        <p>Water, plaster, and silica weights by investment volume, for the 1:1.75 and 1:2 mixes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head"><h2>Reference</h2><span class="count">4 charts</span></div>
+    <div class="cards">
+      <div class="card soon">
+        <div class="card-top"><h3>Conversion</h3><span class="tag soon">Soon</span></div>
+        <p>Fahrenheit / Celsius and cm / inch, for temperatures and ramp rates.</p>
+      </div>
+      <div class="card soon">
+        <div class="card-top"><h3>Process Temps</h3><span class="tag soon">Soon</span></div>
+        <p>Strain, anneal, softening, and every forming temperature for Bullseye and Oceanside, plus the devitrification zone.</p>
+      </div>
+      <div class="card soon">
+        <div class="card-top"><h3>Bullseye Anneal</h3><span class="tag soon">Soon</span></div>
+        <p>Published Bullseye anneal chart by thickness.</p>
+      </div>
+      <div class="card soon">
+        <div class="card-top"><h3>Gaffer Lead Anneal</h3><span class="tag soon">Soon</span></div>
+        <p>Published Gaffer anneal chart by thickness.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Joshua Hargrave 2026</span>
+    <span>Fahrenheit throughout</span>
+  </footer>
+</div>
+</body>
+</html>
