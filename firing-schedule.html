@@ -88,6 +88,23 @@
     background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
     background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:26px}
   input::placeholder{color:var(--ink-faint)}
+  textarea{font-family:"Space Grotesk",sans-serif;font-size:13.5px;color:var(--ink);
+    background:var(--amber-fill);border:1px solid var(--hairline-bright);border-radius:2px;
+    padding:8px 9px;width:100%;resize:vertical;line-height:1.5;transition:border-color .12s,box-shadow .12s}
+  textarea:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-line)}
+  .log-sub{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--ink-dim);margin:18px 0 9px}
+  table.glass{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:13px;margin-bottom:16px}
+  table.glass th{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:600;letter-spacing:0.04em;
+    text-transform:uppercase;color:var(--ink-dim);text-align:left;padding:0 8px 8px;border-bottom:1px solid var(--hairline-bright)}
+  table.glass th.r,table.glass td.r{text-align:right}
+  table.glass td{padding:0;border-bottom:1px solid var(--hairline)}
+  table.glass td input{border:none;border-radius:0;background:var(--amber-fill);padding:6px 8px;font-size:13px;box-shadow:none}
+  table.glass td input:focus{background:rgba(255,176,64,0.16);box-shadow:inset 0 0 0 1px var(--amber-line)}
+  table.glass td input.gw{text-align:right}
+  table.glass tr.total td{border-bottom:none;padding-top:8px;font-weight:500}
+  table.glass tr.total .lbl{font-family:"Space Grotesk",sans-serif;font-size:11.5px;color:var(--ink-dim);text-align:right;padding-right:8px}
+  table.glass tr.total .val{text-align:right;padding:8px;color:var(--ink)}
 
   /* ---- start-time row ---- */
   .start-row{display:grid;gap:12px 14px;grid-template-columns:repeat(2,1fr);margin-top:4px}
@@ -186,6 +203,16 @@
     svg.curve{filter:none}
     .curve-box{background:#fff}
     footer{color:#555;border-color:#000;margin-top:12px}
+    /* firing record starts a fresh page, with writable boxes */
+    .log-panel{break-before:page;margin-top:0}
+    .log-panel .phead{border-bottom:1px solid #000}
+    textarea{background:#fff !important;border:1px solid #999;color:#000;font-size:10px;min-height:0.7in}
+    .log-sub{color:#000}
+    table.glass{font-size:10px}
+    table.glass th{color:#000;border-color:#000;padding:0 5px 3px}
+    table.glass td{border-color:#bbb}
+    table.glass td input{background:#fff !important;padding:3px 5px;color:#000}
+    table.glass tr.total .lbl,table.glass tr.total .val{color:#000}
   }
 </style>
 </head>
@@ -298,6 +325,28 @@
         <table class="anneal"><tbody id="a_body"></tbody></table>
       </div>
     </div>
+  </div>
+
+  <div class="panel log-panel" style="margin-top:22px">
+    <div class="phead"><span class="n">06</span><h2>Firing record</h2>
+      <span class="hint">your notes — included in the printed PDF</span></div>
+    <div class="field"><label>Description / sketch</label>
+      <textarea id="lg_desc" rows="3" placeholder="What you're making, form notes, sketch…"></textarea></div>
+
+    <div class="log-sub">Glass used</div>
+    <table class="glass">
+      <thead><tr>
+        <th>Brand</th><th>Color code</th><th>Form (billet / frit / sheet)</th><th class="r">Weight (g)</th>
+      </tr></thead>
+      <tbody id="glassbody"></tbody>
+      <tfoot><tr class="total">
+        <td colspan="3" class="lbl">Total weight (g)</td>
+        <td class="val" id="gw_total">0</td>
+      </tr></tfoot>
+    </table>
+
+    <div class="field"><label>Notes on results — success / devit / cracking / flashing / ideas for next time</label>
+      <textarea id="lg_notes" rows="3" placeholder="How it came out, what to change next firing…"></textarea></div>
   </div>
 
   <footer>
@@ -677,6 +726,28 @@ function renderAnneal(){
     R("Final cooling", cool(fr,ft));
 }
 
+/* ---------------- glass used (log) ---------------- */
+const GLASS_ROWS = 6;
+function buildGlassRows(){
+  const tb = $("glassbody");
+  tb.innerHTML = "";
+  for(let i=0;i<GLASS_ROWS;i++){
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td><input type="text" data-g="brand" placeholder="—"></td>
+       <td><input type="text" data-g="code" placeholder="—"></td>
+       <td><input type="text" data-g="form" placeholder="—"></td>
+       <td class="r"><input class="gw" type="number" min="0" step="any" placeholder="0"></td>`;
+    tb.appendChild(tr);
+  }
+  tb.querySelectorAll("input.gw").forEach(inp=>inp.addEventListener("input",sumGlass));
+}
+function sumGlass(){
+  let t = 0;
+  document.querySelectorAll("#glassbody input.gw").forEach(inp=>{ t += parseFloat(inp.value)||0; });
+  $("gw_total").textContent = (Math.round(t*100)/100).toLocaleString();
+}
+
 /* ---------------- init ---------------- */
 function fillThicknessSelect(sel, defInch){
   sel.innerHTML = THICKNESSES.map(t=>`<option value="${t[1]}">${t[0]}</option>`).join("");
@@ -691,6 +762,7 @@ function init(){
   $("s_date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
 
   buildRows();
+  buildGlassRows();
   seedCanonical();   // set data-f from the Fahrenheit defaults
 
   // m_start is a temperature -> route through onFieldInput so its data-f stays current
