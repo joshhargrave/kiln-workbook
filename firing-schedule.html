@@ -89,6 +89,7 @@
     background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
     background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:26px}
   input::placeholder{color:var(--ink-faint)}
+  select option{background:#1d2025;color:#e8e6e1}
   textarea{font-family:"Space Grotesk",sans-serif;font-size:13.5px;color:var(--ink);
     background:var(--amber-fill);border:1px solid var(--hairline-bright);border-radius:2px;
     padding:8px 9px;width:100%;resize:vertical;line-height:1.5;transition:border-color .12s,box-shadow .12s}
@@ -207,16 +208,19 @@
     svg.curve{filter:none}
     .curve-box{background:#fff}
     footer{color:#555;border-color:#000;margin-top:12px}
-    /* firing record starts a fresh page, with writable boxes */
+    /* firing record starts a fresh page; spread the writable boxes to fill it */
     .log-panel{break-before:page;margin-top:0}
-    .log-panel .phead{border-bottom:1px solid #000}
-    textarea{background:#fff !important;border:1px solid #999;color:#000;font-size:10px;min-height:0.7in}
-    .log-sub{color:#000}
+    .log-panel .phead{border-bottom:1px solid #000;margin-bottom:14px}
+    .log-panel .field{margin-bottom:16px}
+    textarea{background:#fff !important;border:1px solid #999;color:#000;font-size:10px}
+    #lg_desc{min-height:2.7in}
+    #lg_notes{min-height:2.1in}
+    .log-sub{color:#000;margin:20px 0 10px;font-size:12px}
     table.glass{font-size:10px}
-    table.glass th{color:#000;border-color:#000;padding:0 5px 3px}
+    table.glass th{color:#000;border-color:#000;padding:0 5px 6px}
     table.glass td{border-color:#bbb}
-    table.glass td input{background:#fff !important;padding:3px 5px;color:#000}
-    table.glass tr.total .lbl,table.glass tr.total .val{color:#000}
+    table.glass td input{background:#fff !important;padding:11px 5px;color:#000}
+    table.glass tr.total .lbl,table.glass tr.total .val{color:#000;padding-top:12px}
   }
 </style>
 </head>
@@ -676,11 +680,22 @@ function drawCurve(startTemp, maxTarget, total){
     grid += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--hairline)" stroke-width="1"/>`;
     grid += `<text x="${padL-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${dispTemp(v)}</text>`;
   }
+  const base = startDateTime();
   const xTicks = 4;
   for(let k=0;k<=xTicks;k++){
     const t = tMax*k/xTicks, x=X(t);
     grid += `<line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${padT+plotH}" stroke="var(--hairline)" stroke-width="1" opacity="0.5"/>`;
-    grid += `<text x="${x.toFixed(1)}" y="${padT+plotH+16}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${t.toFixed(t<10?1:0)}</text>`;
+    const anchor = k===0 ? "start" : (k===xTicks ? "end" : "middle");
+    const xa = k===0 ? padL : (k===xTicks ? W-padR : x);
+    if(base){
+      const d = new Date(base.getTime()+t*3600*1000);
+      const wd = d.toLocaleDateString([], {weekday:"short"});
+      const tm = d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+      grid += `<text x="${xa.toFixed(1)}" y="${padT+plotH+15}" text-anchor="${anchor}" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-faint)">${wd}</text>`;
+      grid += `<text x="${xa.toFixed(1)}" y="${padT+plotH+25}" text-anchor="${anchor}" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-faint)">${tm}</text>`;
+    } else {
+      grid += `<text x="${xa.toFixed(1)}" y="${padT+plotH+16}" text-anchor="${anchor}" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">${t.toFixed(t<10?1:0)}h</text>`;
+    }
   }
 
   // path
