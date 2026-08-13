@@ -66,9 +66,10 @@
 
   /* ---- layout grid ---- */
   .cols{display:grid;grid-template-columns:1fr;gap:22px}
+  .cols > div{min-width:0}
   @media(min-width:1000px){.cols{grid-template-columns:minmax(0,1fr) 360px}}
 
-  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px}
+  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px;min-width:0}
   .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
   .phead .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);letter-spacing:0.1em}
   .phead h2{font-size:14px;font-weight:600;letter-spacing:0.01em;margin:0;text-transform:uppercase}
@@ -88,7 +89,7 @@
   input,select{
     font-family:"JetBrains Mono",monospace;font-size:13.5px;color:var(--ink);
     background:var(--amber-fill);border:1px solid var(--hairline-bright);border-radius:2px;
-    padding:7px 8px;width:100%;transition:border-color .12s,box-shadow .12s}
+    padding:7px 8px;width:100%;min-width:0;transition:border-color .12s,box-shadow .12s}
   input:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-line)}
   select{cursor:pointer;-webkit-appearance:none;appearance:none;
     background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
@@ -115,7 +116,10 @@
 
   /* ---- start-time row ---- */
   .start-row{display:grid;gap:12px 14px;grid-template-columns:repeat(2,1fr);margin-top:4px}
-  @media(min-width:640px){.start-row{grid-template-columns:1.4fr .7fr .7fr .8fr .9fr}}
+  /* on phones the native date picker won't shrink, so give it a full row to itself */
+  .start-row > .field:first-child{grid-column:1 / -1}
+  @media(min-width:640px){.start-row{grid-template-columns:1.4fr .7fr .7fr .8fr .9fr}
+    .start-row > .field:first-child{grid-column:auto}}
 
   /* ---- readout strip ---- */
   .readouts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hairline);
@@ -127,7 +131,7 @@
   .ro.hot .v{color:var(--h-yellow)}
 
   /* ---- schedule table ---- */
-  .sched-wrap{overflow-x:auto;margin:0 -2px}
+  .sched-wrap{overflow-x:auto;margin:0 -2px;min-width:0}
   table.sched{border-collapse:collapse;width:100%;font-family:"JetBrains Mono",monospace;font-size:13px;min-width:840px}
   table.sched th{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:600;letter-spacing:0.04em;
     text-transform:uppercase;color:var(--ink-dim);text-align:right;padding:0 9px 9px;border-bottom:1px solid var(--hairline-bright);white-space:nowrap;vertical-align:bottom}
@@ -176,20 +180,26 @@
   .ref-note{font-size:11.5px;color:var(--ink-dim);margin-bottom:14px;line-height:1.5}
   .ref-note b{color:var(--amber);font-weight:600}
   .ref-grid{display:grid;grid-template-columns:1fr;gap:22px}
+  .ref-grid > div{min-width:0}
   @media(min-width:860px){.ref-grid{grid-template-columns:1fr 1fr}}
   .ref-title{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 10px}
-  .ref-foot{font-size:10.5px;color:var(--ink-faint);margin:9px 0 0;line-height:1.5}
-  .ref-scroll{overflow-x:auto}
-  table.ref{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:12px;min-width:0}
+  .ref-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.ref{width:max-content;min-width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:12px}
   table.ref th{font-family:"Space Grotesk",sans-serif;font-size:9.5px;font-weight:600;letter-spacing:0.03em;
     text-transform:uppercase;color:var(--ink-dim);text-align:right;padding:0 7px 7px;border-bottom:1px solid var(--hairline-bright);white-space:nowrap}
-  table.ref th.l,table.ref td.l{text-align:left}
+  /* keep the glass name pinned while the numbers scroll */
+  table.ref th.l,table.ref td.l{text-align:left;position:sticky;left:0;background:var(--raised);z-index:2}
+  table.ref thead th.l{z-index:3}
   table.ref td{text-align:right;padding:5px 7px;border-bottom:1px solid var(--hairline);white-space:nowrap;color:var(--ink-dim)}
   table.ref tr:last-child td{border-bottom:none}
   table.ref td.l{color:var(--ink)}
   table.ref tr.on td{background:var(--amber-fill);color:var(--ink)}
-  table.ref tr.on td.l{color:var(--amber)}
+  table.ref tr.on td.l{color:var(--amber);background:#2a2621}
   table.ref td.hi{color:var(--amber)}
+  @media(max-width:600px){
+    table.ref{font-size:11px}
+    table.ref th,table.ref td{padding-left:6px;padding-right:6px}
+  }
 
   footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--hairline);
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
@@ -284,7 +294,7 @@
       <div class="field recipe"><label>Process</label>
         <select id="r_process"></select></div>
       <div class="field recipe"><label>Thickness (mm)</label>
-        <input id="r_thk" type="number" min="1" step="1" value="6"></div>
+        <select id="r_thk"><option>3</option><option selected>6</option><option>9</option><option>12</option></select></div>
       <div class="field recipe"><label>Caution</label>
         <select id="r_caution"><option>Standard</option><option>Cautious</option><option>Very cautious</option></select></div>
     </div>
@@ -313,11 +323,11 @@
           <table class="sched">
             <thead><tr>
               <th class="l">Seg</th>
-              <th class="l">Stage</th>
               <th>Rate<span class="u">°<span class="u-lbl">F</span>/hr</span></th>
               <th>Target<span class="u">°<span class="u-lbl">F</span></span></th>
               <th>Hold<span class="u">hr</span></th>
               <th>Hold<span class="u">min</span></th>
+              <th class="l">Stage</th>
               <th>Ramp<span class="u">h:mm</span></th>
               <th>Segment<span class="u">h:mm</span></th>
               <th>Cumulative<span class="u">h:mm</span></th>
@@ -329,7 +339,7 @@
         <div class="legend">
           <span><span class="swatch inp"></span>Input cell — editable</span>
           <span><span class="swatch out"></span>Calculated</span>
-          <span><span class="afap-tag">AFAP</span> = as fast as possible — type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+          <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
         </div>
       </div>
 
@@ -364,7 +374,6 @@
       <div>
         <p class="ref-title">Process temperatures — °<span class="u-lbl">F</span></p>
         <div class="ref-scroll"><table class="ref" id="ref_temp"></table></div>
-        <p class="ref-foot">COE is the nominal coefficient of expansion (×10⁻⁷). COE 96 also covers Wissmach 96. Float and soda-lime values are approximate and not tested for compatibility.</p>
       </div>
       <div>
         <p class="ref-title">Rates &amp; anneal by thickness</p>
@@ -375,7 +384,7 @@
 
   <div class="panel log-panel" style="margin-top:22px">
     <div class="phead"><span class="n">07</span><h2>Firing record</h2>
-      <span class="hint">your notes — included in the printed PDF</span></div>
+      <span class="hint">your notes, included in the printed PDF</span></div>
     <div class="field"><label>Description / sketch</label>
       <textarea id="lg_desc" rows="3" placeholder="What you're making, form notes, sketch…"></textarea></div>
 
@@ -391,7 +400,7 @@
       </tr></tfoot>
     </table>
 
-    <div class="field"><label>Notes on results — success / devit / cracking / flashing / ideas for next time</label>
+    <div class="field"><label>Notes on results: success / devit / cracking / flashing / ideas for next time</label>
       <textarea id="lg_notes" rows="3" placeholder="How it came out, what to change next firing…"></textarea></div>
   </div>
 
@@ -405,19 +414,19 @@
 "use strict";
 
 /* ---------------- reference data (all Fahrenheit) ---------------- */
-const GLASSES = ["Bullseye","Oceanside 96","Float (window)","Soda lime (bottle)"];
+const GLASSES = ["Bullseye","Oceanside 96","Float (window)","Blown furnace (Spruce Pine)"];
 const PROCESSES = ["Slump","Tack fuse","Contour fuse","Full fuse","Fire polish","Dropout"];
 
 // process target temperatures by glass
 const TEMP = {
-  "Bullseye":            {anneal:900, squeeze:1225, slump:1225, tack:1325, contour:1400, full:1475, firepolish:1275, dropout:1250},
-  "Oceanside 96":        {anneal:950, squeeze:1250, slump:1235, tack:1360, contour:1420, full:1465, firepolish:1325, dropout:1275},
-  "Float (window)":      {anneal:1010,squeeze:1250, slump:1250, tack:1425, contour:1500, full:1550, firepolish:1350, dropout:1330},
-  "Soda lime (bottle)":  {anneal:950, squeeze:1250, slump:1250, tack:1380, contour:1440, full:1500, firepolish:1250, dropout:1290}
+  "Bullseye":                   {anneal:900, squeeze:1225, slump:1225, tack:1325, contour:1400, full:1475, firepolish:1275, dropout:1250},
+  "Oceanside 96":               {anneal:950, squeeze:1250, slump:1235, tack:1360, contour:1420, full:1465, firepolish:1325, dropout:1275},
+  "Float (window)":             {anneal:1010,squeeze:1250, slump:1250, tack:1425, contour:1500, full:1550, firepolish:1350, dropout:1330},
+  "Blown furnace (Spruce Pine)":{anneal:900, squeeze:1225, slump:1225, tack:1350, contour:1400, full:1465, firepolish:1300, dropout:1250}
 };
-// nominal coefficient of expansion (×10⁻⁷) — approximate for float/soda-lime
+// nominal coefficient of expansion (×10⁻⁷) — approximate for float
 const COE = {
-  "Bullseye":"90", "Oceanside 96":"96", "Float (window)":"~85", "Soda lime (bottle)":"~90"
+  "Bullseye":"90", "Oceanside 96":"96", "Float (window)":"~85", "Blown furnace (Spruce Pine)":"96"
 };
 // column order + key for the process temp reference table
 const TEMP_COLS = [
@@ -605,11 +614,11 @@ function buildRows(){
     const tr = document.createElement("tr");
     tr.innerHTML =
       `<td class="seg">${i+1}</td>
-       <td class="inp stage"><input data-k="stage"  data-i="${i}" type="text" value="" placeholder="—"></td>
        <td class="inp"><input data-k="rate"   data-i="${i}" type="text" value="" placeholder="—"></td>
        <td class="inp"><input data-k="target" data-i="${i}" type="text" value="" placeholder="—"></td>
        <td class="inp"><input data-k="hh"     data-i="${i}" type="text" value="" placeholder="0"></td>
        <td class="inp"><input data-k="hm"     data-i="${i}" type="text" value="" placeholder="0"></td>
+       <td class="inp stage"><input data-k="stage"  data-i="${i}" type="text" value="" placeholder="—"></td>
        <td class="calc ramp"><span class="cell"></span></td>
        <td class="calc segt"><span class="cell"></span></td>
        <td class="calc cum"><span class="cell"></span></td>
@@ -858,8 +867,7 @@ function init(){
   // start-clock fields: no unit conversion
   ["s_date","s_hour","s_min","s_ampm","s_delay"].forEach(id=>$(id).addEventListener("input",recalc));
   // recipe controls: regenerate on change
-  ["r_glass","r_process","r_caution"].forEach(id=>$(id).addEventListener("change",generate));
-  $("r_thk").addEventListener("input",generate);
+  ["r_glass","r_process","r_caution","r_thk"].forEach(id=>$(id).addEventListener("change",generate));
 
   generate();        // populate the default recipe (Bullseye · Full fuse · 6 mm · Standard)
 }

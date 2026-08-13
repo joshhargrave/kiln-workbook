@@ -66,9 +66,10 @@
 
   /* ---- layout grid ---- */
   .cols{display:grid;grid-template-columns:1fr;gap:22px}
+  .cols > div{min-width:0}
   @media(min-width:1000px){.cols{grid-template-columns:minmax(0,1fr) 360px}}
 
-  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px}
+  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px;min-width:0}
   .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
   .phead .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);letter-spacing:0.1em}
   .phead h2{font-size:14px;font-weight:600;letter-spacing:0.01em;margin:0;text-transform:uppercase}
@@ -82,7 +83,7 @@
   input,select{
     font-family:"JetBrains Mono",monospace;font-size:13.5px;color:var(--ink);
     background:var(--amber-fill);border:1px solid var(--hairline-bright);border-radius:2px;
-    padding:7px 8px;width:100%;transition:border-color .12s,box-shadow .12s}
+    padding:7px 8px;width:100%;min-width:0;transition:border-color .12s,box-shadow .12s}
   input:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-line)}
   select{cursor:pointer;-webkit-appearance:none;appearance:none;
     background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
@@ -108,7 +109,10 @@
 
   /* ---- start-time row ---- */
   .start-row{display:grid;gap:12px 14px;grid-template-columns:repeat(2,1fr);margin-top:4px}
-  @media(min-width:640px){.start-row{grid-template-columns:1.4fr .7fr .7fr .8fr .9fr}}
+  /* on phones the native date picker won't shrink, so give it a full row to itself */
+  .start-row > .field:first-child{grid-column:1 / -1}
+  @media(min-width:640px){.start-row{grid-template-columns:1.4fr .7fr .7fr .8fr .9fr}
+    .start-row > .field:first-child{grid-column:auto}}
 
   /* ---- readout strip ---- */
   .readouts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hairline);
@@ -120,7 +124,7 @@
   .ro.hot .v{color:var(--h-yellow)}
 
   /* ---- schedule table ---- */
-  .sched-wrap{overflow-x:auto;margin:0 -2px}
+  .sched-wrap{overflow-x:auto;margin:0 -2px;min-width:0}
   table.sched{border-collapse:collapse;width:100%;font-family:"JetBrains Mono",monospace;font-size:13px;min-width:720px}
   table.sched th{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:600;letter-spacing:0.04em;
     text-transform:uppercase;color:var(--ink-dim);text-align:right;padding:0 9px 9px;border-bottom:1px solid var(--hairline-bright);white-space:nowrap;vertical-align:bottom}
@@ -280,7 +284,7 @@
               <th>Ramp<span class="u">h:mm</span></th>
               <th>Segment<span class="u">h:mm</span></th>
               <th>Cumulative<span class="u">h:mm</span></th>
-              <th class="l">Clock complete</th>
+              <th class="l">Segment Complete Time</th>
             </tr></thead>
             <tbody id="segbody"></tbody>
           </table>
@@ -288,7 +292,7 @@
         <div class="legend">
           <span><span class="swatch inp"></span>Input cell</span>
           <span><span class="swatch out"></span>Calculated</span>
-          <span><span class="afap-tag">AFAP</span> = as fast as possible — type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+          <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
         </div>
       </div>
 
@@ -315,7 +319,7 @@
       <div class="panel anneal-panel">
         <div class="phead"><span class="n">05</span><h2>Anneal reference</h2>
           <span class="hint">screen only</span></div>
-        <p class="anneal-note">Published anneal schedule for your <b>brand</b> and <b>thickness</b>, rounded up to the next listed thickness. This is a readout — it does <b>not</b> change the segments above. Copy the values in yourself if you want to use them.</p>
+        <p class="anneal-note">Published anneal schedule for your <b>brand</b> and <b>thickness</b>, rounded up to the next listed thickness. This is a readout; it does <b>not</b> change the segments above. Copy the values in yourself if you want to use them.</p>
         <div class="anneal-pick">
           <div class="field"><label>Brand</label>
             <select id="a_brand"><option>Bullseye</option><option>Gaffer</option></select></div>
@@ -329,7 +333,7 @@
 
   <div class="panel log-panel" style="margin-top:22px">
     <div class="phead"><span class="n">06</span><h2>Firing record</h2>
-      <span class="hint">your notes — included in the printed PDF</span></div>
+      <span class="hint">your notes, included in the printed PDF</span></div>
     <div class="field"><label>Description / sketch</label>
       <textarea id="lg_desc" rows="3" placeholder="What you're making, form notes, sketch…"></textarea></div>
 
@@ -345,7 +349,7 @@
       </tr></tfoot>
     </table>
 
-    <div class="field"><label>Notes on results — success / devit / cracking / flashing / ideas for next time</label>
+    <div class="field"><label>Notes on results: success / devit / cracking / flashing / ideas for next time</label>
       <textarea id="lg_notes" rows="3" placeholder="How it came out, what to change next firing…"></textarea></div>
   </div>
 
@@ -411,13 +415,13 @@ const ANNEAL = {
 
 // default casting schedule (matches the workbook example)
 const DEFAULT_SEGMENTS = [
-  {rate:"200",  target:"190", hh:"3", hm:"0"},
-  {rate:"100",  target:"400", hh:"3", hm:"0"},
-  {rate:"200",  target:"1250",hh:"1", hm:"0"},
-  {rate:"600",  target:"1525",hh:"2", hm:"0"},
-  {rate:"9999", target:"900", hh:"4", hm:"0"},
+  {rate:"100",  target:"200", hh:"6", hm:"0"},
+  {rate:"100",  target:"1250",hh:"2", hm:"0"},
+  {rate:"300",  target:"1525",hh:"3", hm:"0"},
+  {rate:"9999", target:"1250",hh:"2", hm:"0"},
+  {rate:"50",   target:"900", hh:"4", hm:"0"},
   {rate:"30",   target:"800", hh:"0", hm:"0"},
-  {rate:"60",   target:"700", hh:"0", hm:"0"},
+  {rate:"50",   target:"700", hh:"0", hm:"0"},
   {rate:"160",  target:"150", hh:"0", hm:"0"}
 ];
 const N_ROWS = 12;
@@ -760,6 +764,11 @@ function init(){
   // default start date = today
   const t=new Date();
   $("s_date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+  // preload the current clock time
+  const h24=t.getHours();
+  $("s_hour").value = String((h24%12)||12);          // 0->12, 13->1
+  $("s_min").value  = String(t.getMinutes());
+  $("s_ampm").value = h24>=12 ? "PM" : "AM";
 
   buildRows();
   buildGlassRows();
