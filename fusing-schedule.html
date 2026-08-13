@@ -419,7 +419,7 @@
 
   <footer>
     <span>Joshua Hargrave · Kiln Forming Workbook</span>
-    <span><span id="foot-unit">Fahrenheit</span> throughout · <a href="#" onclick="return false">web edition</a></span>
+    <span><a href="#" onclick="return false">web edition</a></span>
   </footer>
 </div>
 
@@ -520,7 +520,6 @@ function setUnit(u){
   $("unit-f").classList.toggle("on", UNIT==="F");
   $("unit-c").classList.toggle("on", UNIT==="C");
   document.querySelectorAll(".u-lbl").forEach(s => s.textContent = UNIT);
-  $("foot-unit").textContent = UNIT==="F" ? "Fahrenheit" : "Celsius";
   recalc();
   renderRefTables();
 }
