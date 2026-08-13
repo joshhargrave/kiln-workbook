@@ -178,6 +178,7 @@
   .ref-grid{display:grid;grid-template-columns:1fr;gap:22px}
   @media(min-width:860px){.ref-grid{grid-template-columns:1fr 1fr}}
   .ref-title{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 10px}
+  .ref-foot{font-size:10.5px;color:var(--ink-faint);margin:9px 0 0;line-height:1.5}
   .ref-scroll{overflow-x:auto}
   table.ref{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:12px;min-width:0}
   table.ref th{font-family:"Space Grotesk",sans-serif;font-size:9.5px;font-weight:600;letter-spacing:0.03em;
@@ -251,7 +252,7 @@
     <div class="title-block">
       <p class="eyebrow">Kiln Forming Workbook · Fusing</p>
       <h1>Fusing Schedule</h1>
-      <p class="sub">Pick a glass, process, thickness, and caution level — a recommended schedule is generated, then every cell is yours to edit. Ramp time, segment time, cumulative time, and the clock time each segment finishes recalculate as you type.</p>
+      <p class="sub">Pick a glass, process, thickness, and caution level to generate a recommended schedule, then edit any cell you like. Ramp time, segment time, cumulative time, and the clock time each segment finishes recalculate as you type.</p>
     </div>
     <div class="header-actions">
       <div class="unit-toggle" role="group" aria-label="Temperature unit">
@@ -340,9 +341,9 @@
       </div>
     </div>
 
-    <!-- RIGHT: totals + recipe notes -->
+    <!-- RIGHT: totals -->
     <div>
-      <div class="panel" style="margin-bottom:22px">
+      <div class="panel">
         <div class="phead"><span class="n">05</span><h2>Totals</h2></div>
         <div class="readouts">
           <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
@@ -351,24 +352,19 @@
           <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
         </div>
       </div>
-
-      <div class="panel rnotes-panel">
-        <div class="phead"><span class="n">06</span><h2>Recipe notes</h2>
-          <span class="hint">screen only</span></div>
-        <div class="rnotes" id="rnotes"></div>
-      </div>
     </div>
   </div>
 
   <!-- reference tables -->
   <div class="panel ref-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">07</span><h2>Reference tables</h2>
+    <div class="phead"><span class="n">06</span><h2>Reference tables</h2>
       <span class="hint">screen only · these drive the recipe above</span></div>
-    <p class="ref-note">The generated schedule reads these two tables. Process <b>target temperatures</b> come from the temp table; <b>ramp rates, anneal soak, and cooling</b> come from the thickness table (bracket rounded up to the next listed thickness). The active glass and thickness for your current recipe are highlighted. Values are starting points — every glass and kiln is different, so test and keep records.</p>
+    <p class="ref-note">The generated schedule reads these two tables. Process <b>target temperatures</b> come from the temp table; <b>ramp rates, anneal soak, and cooling</b> come from the thickness table (bracket rounded up to the next listed thickness). The active glass and thickness for your current recipe are highlighted. Values are starting points; every glass and kiln is different, so test and keep records.</p>
     <div class="ref-grid">
       <div>
         <p class="ref-title">Process temperatures — °<span class="u-lbl">F</span></p>
         <div class="ref-scroll"><table class="ref" id="ref_temp"></table></div>
+        <p class="ref-foot">COE is the nominal coefficient of expansion (×10⁻⁷). COE 96 also covers Wissmach 96. Float and soda-lime values are approximate and not tested for compatibility.</p>
       </div>
       <div>
         <p class="ref-title">Rates &amp; anneal by thickness</p>
@@ -378,7 +374,7 @@
   </div>
 
   <div class="panel log-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">08</span><h2>Firing record</h2>
+    <div class="phead"><span class="n">07</span><h2>Firing record</h2>
       <span class="hint">your notes — included in the printed PDF</span></div>
     <div class="field"><label>Description / sketch</label>
       <textarea id="lg_desc" rows="3" placeholder="What you're making, form notes, sketch…"></textarea></div>
@@ -409,15 +405,19 @@
 "use strict";
 
 /* ---------------- reference data (all Fahrenheit) ---------------- */
-const GLASSES = ["Bullseye","Oceanside 96","Float","Soda lime"];
+const GLASSES = ["Bullseye","Oceanside 96","Float (window)","Soda lime (bottle)"];
 const PROCESSES = ["Slump","Tack fuse","Contour fuse","Full fuse","Fire polish","Dropout"];
 
 // process target temperatures by glass
 const TEMP = {
-  "Bullseye":     {anneal:900, squeeze:1225, slump:1225, tack:1325, contour:1400, full:1475, firepolish:1275, dropout:1250},
-  "Oceanside 96": {anneal:950, squeeze:1250, slump:1235, tack:1360, contour:1420, full:1465, firepolish:1325, dropout:1275},
-  "Float":        {anneal:1010,squeeze:1250, slump:1300, tack:1420, contour:1460, full:1500, firepolish:1338, dropout:1330},
-  "Soda lime":    {anneal:950, squeeze:1250, slump:1250, tack:1380, contour:1440, full:1500, firepolish:1250, dropout:1290}
+  "Bullseye":            {anneal:900, squeeze:1225, slump:1225, tack:1325, contour:1400, full:1475, firepolish:1275, dropout:1250},
+  "Oceanside 96":        {anneal:950, squeeze:1250, slump:1235, tack:1360, contour:1420, full:1465, firepolish:1325, dropout:1275},
+  "Float (window)":      {anneal:1010,squeeze:1250, slump:1250, tack:1425, contour:1500, full:1550, firepolish:1350, dropout:1330},
+  "Soda lime (bottle)":  {anneal:950, squeeze:1250, slump:1250, tack:1380, contour:1440, full:1500, firepolish:1250, dropout:1290}
+};
+// nominal coefficient of expansion (×10⁻⁷) — approximate for float/soda-lime
+const COE = {
+  "Bullseye":"90", "Oceanside 96":"96", "Float (window)":"~85", "Soda lime (bottle)":"~90"
 };
 // column order + key for the process temp reference table
 const TEMP_COLS = [
@@ -501,7 +501,6 @@ function setUnit(u){
   $("foot-unit").textContent = UNIT==="F" ? "Fahrenheit" : "Celsius";
   recalc();
   renderRefTables();
-  renderNotes();
 }
 
 function isAFAP(raw){
@@ -596,7 +595,6 @@ function generate(){
   }
   recalc();
   renderRefTables();
-  renderNotes();
 }
 
 /* ---------------- build segment rows ---------------- */
@@ -777,7 +775,7 @@ function renderRefTables(){
   const activeBracket = thkBracket(isNaN(mmRaw)?6:mmRaw).mm;
 
   // temp table
-  let th = `<thead><tr><th class="l">Glass</th>` +
+  let th = `<thead><tr><th class="l">Glass</th><th>COE</th>` +
     TEMP_COLS.map(c=>`<th>${c[0]}</th>`).join("") + `</tr></thead>`;
   let tb = `<tbody>` + GLASSES.map(g=>{
     const on = g===glass;
@@ -785,7 +783,7 @@ function renderRefTables(){
       const hi = on && (c[1]===activeKey);
       return `<td class="${hi?'hi':''}">${refT(TEMP[g][c[1]])}</td>`;
     }).join("");
-    return `<tr class="${on?'on':''}"><td class="l">${g}</td>${cells}</tr>`;
+    return `<tr class="${on?'on':''}"><td class="l">${g}</td><td>${COE[g]||''}</td>${cells}</tr>`;
   }).join("") + `</tbody>`;
   $("ref_temp").innerHTML = th + tb;
 
@@ -813,35 +811,6 @@ function renderRefTables(){
     </tr>`;
   }).join("") + `</tbody>`;
   $("ref_thk").innerHTML = th2 + tb2;
-}
-
-/* ---------------- recipe notes ---------------- */
-function renderNotes(){
-  const process = $("r_process").value;
-  const mmRaw = parseFloat($("r_thk").value);
-  const mm = isNaN(mmRaw)?6:mmRaw;
-  const notes = [];
-
-  if(process==="Dropout"){
-    notes.push({cls:"warn", tag:"Dropout", html:
-      `This is the <b>drop firing only</b> — it assumes an already fully-fused blank. The hold at drop temperature is a starting point: <b>watch the piece and pull when the drop looks right</b>. Drop temp depends heavily on your ring's hole size (wider hole → lower temp). The estimated end time is <b>approximate</b>.`});
-  }
-  if(process==="Slump"){
-    notes.push({cls:"", tag:"Slump", html:
-      `Slumping is done <b>after</b> the fuse firing, on an already-fused blank. A simple, shallow form needs little time at temperature — deeper molds need more.`});
-  }
-  if(mm < 3){
-    notes.push({cls:"warn", tag:"Thickness", html:
-      `Entered thickness is <b>below 3 mm</b>. The rate chart starts at 3 mm, so the 3 mm rates are being used.`});
-  } else if(mm > 12){
-    notes.push({cls:"warn", tag:"Thickness", html:
-      `Entered thickness is <b>above 12 mm</b> — beyond this chart's range. The 12 mm rates are being used; for thick slabs consult a full annealing chart and lengthen the anneal soak and cooling.`});
-  }
-  notes.push({cls:"", tag:"Reminder", html:
-    `These are starting points from the reference tables. Every glass, mold, and kiln differs — <b>test and keep records</b>. Edit any cell above to fine-tune; <b>Generate</b> rebuilds from the recipe.`});
-
-  $("rnotes").innerHTML = notes.map(n=>
-    `<div class="rnote ${n.cls}"><span class="tag">${n.tag}</span>${n.html}</div>`).join("");
 }
 
 /* ---------------- glass used (record) ---------------- */
