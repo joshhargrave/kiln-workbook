@@ -231,11 +231,24 @@
     font-size:11.5px;color:var(--ink-faint);font-family:"JetBrains Mono",monospace}
   footer a{color:var(--ink-dim)}
 
+  /* ---- save toast ---- */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(8px);
+    background:var(--raised-2);color:var(--ink);border:1px solid var(--hairline-bright);
+    border-left:3px solid var(--amber);border-radius:4px;padding:11px 16px;font-size:12.5px;
+    font-family:"JetBrains Mono",monospace;box-shadow:0 8px 26px rgba(0,0,0,.45);
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:88vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media print{.toast{display:none !important}}
+
   /* ===================== PRINT ===================== */
   @media print{
     @page{size:letter;margin:0.45in}
     body{background:#fff;color:#000;padding:0;font-size:10.5px}
-    .wrap{max-width:none}
+    /* Pin the printable content to a real page width (Letter 8.5in − 0.45in margins
+       ≈ 7.6in; 7.5in leaves slack). Without this, phones lay the page out at the
+       narrow device-screen width and the browser spills it across extra sheets. */
+    html,body{width:auto}
+    .wrap{width:7.5in;max-width:none;margin:0 auto}
     header{border-color:#000;margin-bottom:10px;padding-bottom:8px}
     .title-block .eyebrow,.title-block .sub,.print-btn,.unit-toggle,.legend,.anneal-panel,.curve-axis-note,.phead .hint,footer a{display:none !important}
     .title-block h1{font-size:17px;color:#000;margin:0}
@@ -285,8 +298,8 @@
     .check-cfg2{display:none}
     .readouts{margin-bottom:6px !important}
     .check-list{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-    .chk{background:#fff;border:1px solid #999;border-left:2px solid #000;padding:5px 7px;gap:4px;
-      grid-template-columns:1fr;align-items:start}
+    .chk{background:#fff;border:1px solid #999;border-left:2px solid #000;padding:5px 7px;gap:2px;
+      grid-template-columns:1fr;grid-template-areas:"temp" "label" "clock";align-items:start}
     .chk-cold,.chk-orange,.chk-yellow{border-left-color:#000}
     .chk-off{opacity:1}
     .chk-temp input,.chk-temp .proc-temp{font-size:10px;color:#000;background:#fff !important;border:none;padding:0;width:auto;min-width:0}
@@ -312,6 +325,7 @@
         <button type="button" id="unit-f" class="on" onclick="setUnit('F')">°F</button>
         <button type="button" id="unit-c" onclick="setUnit('C')">°C</button>
       </div>
+      <button class="print-btn" onclick="saveSnapshot()">Save schedule</button>
       <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
     </div>
   </header>
@@ -438,6 +452,8 @@
     <span><a href="#" onclick="return false">web edition</a></span>
   </footer>
 </div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
@@ -992,6 +1008,142 @@ function sumGlass(){
   $("gw_total").textContent = (Math.round(t*100)/100).toLocaleString();
 }
 
+/* ---------------- save / restore (self-contained snapshot) ----------------
+   "Save schedule" writes a standalone .html: this same page with every field's
+   state embedded as JSON in a <script id="snapshot-state"> tag. On load, init()
+   calls restoreSnapshot(); if that tag is present the page re-applies the saved
+   state AFTER its normal build, so the snapshot reopens exactly as saved.
+   Temps/rates carry both the display value and the canonical Fahrenheit (data-f)
+   so the schedule math and the °F/°C toggle stay correct on reopen. */
+const SNAP_FIELDS = ["m_name","m_kiln","m_prog","m_brand","m_thick",
+  "s_date","s_hour","s_min","s_ampm","s_delay",
+  "cfg_lid","cfg_vent","cfg_afap","cfg_anti","lg_desc","lg_notes"];
+
+function captureState(){
+  const st = {unit:UNIT, fields:{}, segs:[], glass:[]};
+  SNAP_FIELDS.forEach(id=>{
+    const el=$(id); if(!el) return;
+    const rec = { v: el.type==="checkbox" ? el.checked : el.value };
+    if(el.dataset && el.dataset.f!=null && el.dataset.f!=="") rec.f = el.dataset.f;
+    st.fields[id] = rec;
+  });
+  for(let i=0;i<N_ROWS;i++){
+    const row={};
+    ["rate","target","hh","hm"].forEach(k=>{
+      const el=segInput(k,i); if(!el) return;
+      const rec={v:el.value};
+      if(k==="rate"||k==="target") rec.f = el.dataset.f??"";
+      if(el.dataset.base!=null) rec.base = el.dataset.base;
+      row[k]=rec;
+    });
+    st.segs.push(row);
+  }
+  document.querySelectorAll("#glassbody tr").forEach(tr=>{
+    const g={};
+    tr.querySelectorAll("input").forEach(inp=>{ g[inp.dataset.g||"wt"]=inp.value; });
+    st.glass.push(g);
+  });
+  return st;
+}
+
+function applyState(st){
+  if(!st) return;
+  if(st.unit==="C" || st.unit==="F"){
+    UNIT = st.unit;
+    $("unit-f").classList.toggle("on", UNIT==="F");
+    $("unit-c").classList.toggle("on", UNIT==="C");
+    document.querySelectorAll(".u-lbl").forEach(s=>s.textContent=UNIT);
+  }
+  const f = st.fields||{};
+  Object.keys(f).forEach(id=>{
+    const el=$(id); if(!el) return;
+    const rec=f[id];
+    if(el.type==="checkbox") el.checked = !!rec.v;
+    else el.value = rec.v!=null ? rec.v : "";
+    if(rec.f!=null && rec.f!=="") el.dataset.f = rec.f;
+  });
+  (st.segs||[]).forEach((row,i)=>{
+    ["rate","target","hh","hm"].forEach(k=>{
+      const el=segInput(k,i); if(!el || !row[k]) return;
+      const rec=row[k];
+      el.value = rec.v!=null ? rec.v : "";
+      if(k==="rate"||k==="target") el.dataset.f = rec.f!=null ? rec.f : "";
+      if(rec.base!=null) el.dataset.base = rec.base; else delete el.dataset.base;
+    });
+  });
+  const grows=document.querySelectorAll("#glassbody tr");
+  (st.glass||[]).forEach((g,i)=>{
+    const tr=grows[i]; if(!tr) return;
+    tr.querySelectorAll("input").forEach(inp=>{
+      const key=inp.dataset.g||"wt";
+      if(g[key]!=null) inp.value=g[key];
+    });
+  });
+  sumGlass();
+  recalc();   // recomputes times, book/mod colours, and the curve from restored state
+}
+
+function restoreSnapshot(){
+  const node=document.getElementById("snapshot-state");
+  if(!node) return;
+  let st; try{ st=JSON.parse(node.textContent); }catch(e){ return; }
+  applyState(st);
+}
+
+// date_project_process.html — date first so files self-sort in Files/Drive
+function snapFilename(){
+  const dv=($("s_date").value||"").trim();
+  let date;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(dv)) date=dv;
+  else { const t=new Date(); date=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`; }
+  let proj=($("m_name").value||"").toLowerCase().trim()
+    .replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
+  if(!proj) proj="schedule";
+  return `${date}_${proj}_casting.html`;
+}
+
+function buildSnapshotHTML(){
+  const state=captureState();
+  const clone=document.documentElement.cloneNode(true);
+  clone.querySelectorAll("#snapshot-state").forEach(n=>n.remove());   // avoid stacking on re-save
+  clone.querySelectorAll("#toast").forEach(n=>{ n.textContent=""; n.classList.remove("show"); });
+  const s=document.createElement("script");
+  s.type="application/json"; s.id="snapshot-state";
+  // \u003c keeps any "<" in notes from prematurely closing the script tag
+  s.textContent=JSON.stringify(state).replace(/</g,"\\u003c");
+  clone.querySelector("body").appendChild(s);
+  return "<!DOCTYPE html>\n"+clone.outerHTML;
+}
+
+let _toastT;
+function toast(msg){
+  const t=$("toast"); if(!t) return;
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove("show"),2800);
+}
+
+async function saveSnapshot(){
+  const filename=snapFilename();
+  let text;
+  try{ text=buildSnapshotHTML(); }catch(e){ toast("Couldn't build the file"); return; }
+  const blob=new Blob([text],{type:"text/html"});
+  // Preferred on phones: native share sheet → Save to Files / Drive / Mail, file attached.
+  if(navigator.canShare){
+    const file=new File([blob],filename,{type:"text/html"});
+    if(navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],title:filename}); return; }
+      catch(e){ if(e && e.name==="AbortError") return; }   // user dismissed; otherwise fall through
+    }
+  }
+  // Fallback (most desktops): direct download.
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast("Saved  "+filename);
+}
+
 /* ---------------- init ---------------- */
 function fillThicknessSelect(sel, defInch){
   sel.innerHTML = THICKNESSES.map(t=>`<option value="${t[1]}">${t[0]}</option>`).join("");
@@ -1025,6 +1177,7 @@ function init(){
 
   layoutTail();      // build the default cooling tail (anti-sucker on, Bullseye + thickness)
   recalc();
+  restoreSnapshot();   // if this file is a saved snapshot, override defaults with saved state
 }
 document.addEventListener("DOMContentLoaded",init);
 </script>
