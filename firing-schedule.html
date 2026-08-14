@@ -65,7 +65,9 @@
     background:transparent;color:var(--ink);border:1px solid var(--hairline-bright);
     border-radius:2px;padding:9px 16px;cursor:pointer;text-transform:uppercase;transition:all .15s}
   .print-btn:hover{border-color:var(--amber);color:var(--amber)}
-  .header-actions{display:flex;align-items:center;gap:12px}
+  .header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .header-actions .unit-toggle,.header-actions .print-btn{flex:0 0 auto}
+  .print-btn{white-space:nowrap}
   .unit-toggle{display:inline-flex;border:1px solid var(--hairline-bright);border-radius:2px;overflow:hidden}
   .unit-toggle button{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:0.04em;
     background:transparent;color:var(--ink-dim);border:none;padding:8px 15px;cursor:pointer;transition:all .13s}
@@ -1122,25 +1124,16 @@ function toast(msg){
   clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove("show"),2800);
 }
 
-async function saveSnapshot(){
+function saveSnapshot(){
   const filename=snapFilename();
   let text;
   try{ text=buildSnapshotHTML(); }catch(e){ toast("Couldn't build the file"); return; }
   const blob=new Blob([text],{type:"text/html"});
-  // Preferred on phones: native share sheet → Save to Files / Drive / Mail, file attached.
-  if(navigator.canShare){
-    const file=new File([blob],filename,{type:"text/html"});
-    if(navigator.canShare({files:[file]})){
-      // Share ONLY the file — passing title/text makes iOS save that string as a
-      // .txt instead of the HTML. The File's own name supplies the filename.
-      try{ await navigator.share({files:[file]}); return; }
-      catch(e){ if(e && e.name==="AbortError") return; }   // user dismissed; otherwise fall through
-    }
-  }
-  // Fallback (most desktops): direct download.
+  // Direct download → Safari saves straight to the Downloads folder: one file, no
+  // share sheet. (Web Share on iOS also drops a junk .txt alongside the .html.)
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
-  a.href=url; a.download=filename;
+  a.href=url; a.download=filename; a.rel="noopener";
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1500);
   toast("Saved  "+filename);
