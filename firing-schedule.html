@@ -1106,9 +1106,10 @@ function recalc(){
     const cumBefore = cum;
     cum += segT;
 
-    // ramp cell — show AFAP tag when applicable
+    // ramp cell — for AFAP show the estimated ramp TIME (from the AFAP est. rate),
+    // tinted so it still reads as an estimate; the Rate column already flags AFAP.
     if(isAFAP(rateRaw)){
-      rampCell.innerHTML = `<span class="afap-tag">AFAP</span>`;
+      rampCell.innerHTML = `<span class="afap-tag">${fmtHM(rh)}</span>`;
     } else {
       rampCell.textContent = fmtHM(rh);
     }
@@ -1582,60 +1583,87 @@ function pdfData(){
   };
 }
 
+function pdfBox(doc, x, y, w, h, ruled, text){
+  doc.setDrawColor(150); doc.setLineWidth(0.5); doc.rect(x,y,w,h);
+  if(ruled){
+    doc.setDrawColor(228); doc.setLineWidth(0.4);
+    for(let ly=y+26; ly<y+h-6; ly+=26){ doc.line(x+7, ly, x+w-7, ly); }
+  }
+  if(text){ doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(20);
+    doc.text(doc.splitTextToSize(String(text), w-14), x+7, y+16); }
+}
+
+// Single page: schedule up top, then a roomy hand-writeable firing record, footer pinned bottom.
 function buildPdf(J, data){
   const U = data.unit==="C" ? "C" : "F";
   const doc = new J({unit:"pt", format:"letter"});
-  const L=40, R=572; let y=50;
+  const L=40, R=572, CX=306; let y=50;
+  const FOOT=776, BOTTOM=752;
+
   doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(20);
   doc.text("Firing Schedule · Casting", L, y);
   doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(110);
   doc.text(String(data.name||""), R, y, {align:"right"});
-  y+=9; doc.setDrawColor(20); doc.setLineWidth(0.8); doc.line(L,y,R,y); y+=20;
+  y+=9; doc.setDrawColor(20); doc.setLineWidth(0.8); doc.line(L,y,R,y); y+=19;
   doc.setTextColor(20); doc.setFontSize(9);
-  doc.text(`Kiln: ${data.kiln||"—"}      Program #: ${data.prog||"—"}      Glass: ${data.brand||"—"}      Anneal thickness: ${data.thick||"—"}`, L, y); y+=15;
-  doc.text(`Start: ${data.start||"—"}      Total: ${data.total||"—"}      Est. end: ${data.end||"—"}`, L, y); y+=20;
-  doc.setFont("helvetica","bold"); doc.text("Checks", L, y); y+=13;
+  doc.text(`Kiln: ${data.kiln||"—"}      Program #: ${data.prog||"—"}      Glass: ${data.brand||"—"}      Anneal thickness: ${data.thick||"—"}`, L, y); y+=14;
+  doc.text(`Start: ${data.start||"—"}      Total: ${data.total||"—"}      Est. end: ${data.end||"—"}`, L, y); y+=18;
+  doc.setFont("helvetica","bold"); doc.text("Checks", L, y); y+=12;
   doc.setFont("helvetica","normal");
   [[`Close lid · vents open  (${data.lid.t}°${U})`, data.lid.clock||"—"],
    [`Close vents · check mold  (${data.vent.t}°${U})`, data.vent.clock||"—"],
    [`Process temp · check + hold  (${data.proc.t})`, data.proc.clock||"—"]
-  ].forEach(c=>{ doc.text(c[0], L, y); doc.text(String(c[1]), R, y, {align:"right"}); y+=13; });
-  y+=8;
+  ].forEach(c=>{ doc.text(c[0], L, y); doc.text(String(c[1]), R, y, {align:"right"}); y+=12; });
+  y+=6;
   doc.autoTable({
     startY:y, margin:{left:L,right:40},
     head:[["Seg",`Rate °${U}/hr`,`Target °${U}`,"Hold","Ramp","Segment","Cumulative","Complete"]],
     body:data.rows,
-    styles:{font:"helvetica",fontSize:8,cellPadding:3,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20]},
+    styles:{font:"helvetica",fontSize:8,cellPadding:2.5,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20]},
     headStyles:{fillColor:[28,32,37],textColor:[255,255,255],fontStyle:"bold",halign:"right"},
     columnStyles:{0:{halign:"center",cellWidth:26},1:{halign:"right"},2:{halign:"right"},7:{halign:"left"}},
     theme:"grid"
   });
-  doc.addPage(); y=50;
-  doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(20);
-  doc.text("Firing Record", L, y);
-  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(110);
-  doc.text(String(data.name||""), R, y, {align:"right"});
-  y+=9; doc.setDrawColor(20); doc.line(L,y,R,y); y+=22;
+
+  // ---- firing record ----
+  y=doc.lastAutoTable.finalY+16;
+  doc.setDrawColor(20); doc.setLineWidth(0.8); doc.line(L,y,R,y); y+=15;
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(20);
+  doc.text("Firing Record", L, y); y+=18;
+
+  // glass rows padded so there are blank lines to write in
+  const glassRows=(data.glass||[]).slice();
+  const TARGET=6; while(glassRows.length<TARGET) glassRows.push(["","","",""]);
+  const gRowH=20, glassH=18+glassRows.length*gRowH+20;
+
+  // two tall columns: description (left) + notes (right); sized to fill down to the glass table
+  const midGap=14, halfW=(R-L-midGap)/2;
   doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(20);
-  doc.text("Description / sketch / dimensions", L, y); y+=8;
-  doc.setDrawColor(150); doc.setLineWidth(0.5); doc.rect(L,y,R-L,150);
-  if(data.desc){ doc.setFont("helvetica","normal"); doc.text(doc.splitTextToSize(String(data.desc), R-L-12), L+6, y+16); }
-  y+=150+22;
-  doc.setFont("helvetica","bold"); doc.text("Glass used", L, y); y+=8;
+  doc.text("Description / sketch / dimensions", L, y);
+  doc.text("Notes on results", L+halfW+midGap, y);
+  y+=8;
+  let colH = BOTTOM - y - 16 /*glass label*/ - 14 /*gap*/ - glassH;
+  colH = Math.max(colH, 96);
+  pdfBox(doc, L,            y, halfW, colH, false, data.desc);   // left: blank for sketching
+  pdfBox(doc, L+halfW+midGap, y, halfW, colH, true,  data.notes); // right: ruled for writing
+  y+=colH+14;
+
+  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(20);
+  doc.text("Glass used", L, y); y+=8;
   doc.autoTable({
     startY:y, margin:{left:L,right:40},
     head:[["Brand","Color code","Form","Weight (g)"]],
-    body: data.glass.length?data.glass:[["","","",""]],
+    body: glassRows,
     foot:[["","","Total (g)", data.gtotal||"0"]],
-    styles:{font:"helvetica",fontSize:9,cellPadding:5,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20],minCellHeight:20},
+    styles:{font:"helvetica",fontSize:9,cellPadding:5,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20],minCellHeight:gRowH},
     headStyles:{fillColor:[28,32,37],textColor:[255,255,255],fontStyle:"bold"},
     footStyles:{fillColor:[245,245,245],textColor:[20,20,20],fontStyle:"bold"},
     columnStyles:{3:{halign:"right"}}, theme:"grid"
   });
-  y=doc.lastAutoTable.finalY+22;
-  doc.setFont("helvetica","bold"); doc.text("Notes on results", L, y); y+=8;
-  doc.setDrawColor(150); doc.rect(L,y,R-L,120);
-  if(data.notes){ doc.setFont("helvetica","normal"); doc.text(doc.splitTextToSize(String(data.notes), R-L-12), L+6, y+16); }
+
+  // footer, pinned bottom
+  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(140);
+  doc.text("Joshua Hargrave · Kiln Forming Workbook 2026", CX, FOOT, {align:"center"});
   return doc;
 }
 
