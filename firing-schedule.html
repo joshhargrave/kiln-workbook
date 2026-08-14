@@ -1131,7 +1131,9 @@ async function saveSnapshot(){
   if(navigator.canShare){
     const file=new File([blob],filename,{type:"text/html"});
     if(navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file],title:filename}); return; }
+      // Share ONLY the file — passing title/text makes iOS save that string as a
+      // .txt instead of the HTML. The File's own name supplies the filename.
+      try{ await navigator.share({files:[file]}); return; }
       catch(e){ if(e && e.name==="AbortError") return; }   // user dismissed; otherwise fall through
     }
   }
