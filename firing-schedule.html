@@ -1633,9 +1633,9 @@ function buildPdf(J, data){
     startY:y, margin:{left:L,right:40},
     head:[["Seg",`Rate °${U}/hr`,`Target °${U}`,"Hold","Ramp","Segment","Cumulative","Complete"]],
     body:data.rows,
-    styles:{font:"helvetica",fontSize:8,cellPadding:2.5,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20]},
-    headStyles:{fillColor:[28,32,37],textColor:[255,255,255],fontStyle:"bold",halign:"right"},
-    columnStyles:{0:{halign:"center",cellWidth:26},1:{halign:"right"},2:{halign:"right"},7:{halign:"left"}},
+    styles:{font:"helvetica",fontSize:8,cellPadding:2.5,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20],halign:"left"},
+    headStyles:{fillColor:[28,32,37],textColor:[255,255,255],fontStyle:"bold"},
+    columnStyles:{0:{halign:"center",cellWidth:26}},
     theme:"grid"
   });
 
