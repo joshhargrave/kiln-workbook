@@ -95,7 +95,12 @@
 
   /* ---- meta inputs ---- */
   .meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 16px}
-  @media(min-width:560px){.meta-grid{grid-template-columns:repeat(3,1fr)}}
+  .meta-grid.c2{grid-template-columns:repeat(2,1fr)}
+  .meta-grid.c3{grid-template-columns:repeat(2,1fr)}
+  .job-rows{display:grid;gap:12px}
+  @media(min-width:560px){.meta-grid{grid-template-columns:repeat(3,1fr)}
+    .meta-grid.c2{grid-template-columns:repeat(2,1fr)}
+    .meta-grid.c3{grid-template-columns:repeat(3,1fr)}}
   .field{display:flex;flex-direction:column;gap:4px;min-width:0}
   .field label{font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim)}
   input,select{
@@ -253,12 +258,7 @@
   @media print{
     @page{size:letter;margin:0.45in}
     body{background:#fff;color:#000;padding:0;font-size:10.5px}
-    /* Pin an explicit print width. iOS Safari lays print out at the device-screen
-       width unless html/body carry a real page width, which is what spread the
-       sheet across extra pages on phones. 7.5in ≈ Letter minus 0.45in margins. */
-    html{width:7.5in}
-    body{width:7.5in;margin:0 auto}
-    .wrap{width:100%;max-width:none;margin:0}
+    .wrap{max-width:none}
     header{border-color:#000;margin-bottom:10px;padding-bottom:8px}
     .title-block .eyebrow,.title-block .sub,.print-btn,.unit-toggle,.legend,.anneal-panel,.curve-axis-note,.phead .hint,footer a{display:none !important}
     .title-block h1{font-size:17px;color:#000;margin:0}
@@ -346,13 +346,21 @@
   <!-- job meta -->
   <div class="panel" style="margin-bottom:22px">
     <div class="phead"><span class="n">00</span><h2>Job</h2></div>
-    <div class="meta-grid">
-      <div class="field"><label>Project name</label><input id="m_name" type="text" placeholder="Project 1" value="Project 1"></div>
-      <div class="field"><label>Kiln #</label><input id="m_kiln" type="text" placeholder="—"></div>
-      <div class="field"><label>User program #</label><input id="m_prog" type="text" placeholder="—"></div>
-      <div class="field"><label>Glass brand</label>
-        <select id="m_brand"><option>Bullseye</option><option>Gaffer</option><option>Other</option></select></div>
-      <div class="field"><label>Annealing thickness</label><select id="m_thick"></select></div>
+    <div class="job-rows">
+      <div class="meta-grid c2">
+        <div class="field"><label>Name</label><input id="m_artist" type="text" placeholder="—"></div>
+        <div class="field"><label>Phone</label><input id="m_phone" type="tel" placeholder="—"></div>
+      </div>
+      <div class="meta-grid c3">
+        <div class="field"><label>Project name</label><input id="m_name" type="text" placeholder="Project 1" value="Project 1"></div>
+        <div class="field"><label>Kiln #</label><input id="m_kiln" type="text" placeholder="—"></div>
+        <div class="field"><label>User program #</label><input id="m_prog" type="text" placeholder="—"></div>
+      </div>
+      <div class="meta-grid c2">
+        <div class="field"><label>Glass brand</label>
+          <select id="m_brand"><option>Bullseye</option><option>Gaffer</option><option>Other</option></select></div>
+        <div class="field"><label>Annealing thickness</label><select id="m_thick"></select></div>
+      </div>
     </div>
   </div>
 
@@ -1413,7 +1421,7 @@ function sumGlass(){
    state AFTER its normal build, so the snapshot reopens exactly as saved.
    Temps/rates carry both the display value and the canonical Fahrenheit (data-f)
    so the schedule math and the °F/°C toggle stay correct on reopen. */
-const SNAP_FIELDS = ["m_name","m_kiln","m_prog","m_brand","m_thick",
+const SNAP_FIELDS = ["m_name","m_kiln","m_prog","m_brand","m_thick","m_artist","m_phone",
   "s_date","s_hour","s_min","s_ampm","s_delay",
   "cfg_lid","cfg_vent","cfg_afap","cfg_anti","lg_desc","lg_notes"];
 
@@ -1488,12 +1496,13 @@ function restoreSnapshot(){
   applyState(st);
 }
 
-// date_project_casting — date first so files self-sort in Downloads/Files
+// MM-DD-YYYY_project_casting
 function snapBaseName(){
   const dv=($("s_date").value||"").trim();
-  let date;
-  if(/^\d{4}-\d{2}-\d{2}$/.test(dv)) date=dv;
-  else { const t=new Date(); date=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`; }
+  let mm,dd,yyyy;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(dv)){ [yyyy,mm,dd]=dv.split("-"); }
+  else { const t=new Date(); yyyy=String(t.getFullYear()); mm=String(t.getMonth()+1).padStart(2,"0"); dd=String(t.getDate()).padStart(2,"0"); }
+  const date=`${mm}-${dd}-${yyyy}`;
   let proj=($("m_name").value||"").toLowerCase().trim()
     .replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
   if(!proj) proj="schedule";
@@ -1573,6 +1582,7 @@ function pdfData(){
     unit:UNIT, name:val("m_name"), kiln:val("m_kiln"), prog:val("m_prog"),
     brand:val("m_brand"),
     thick: thickSel&&thickSel.selectedOptions[0]?thickSel.selectedOptions[0].textContent:"",
+    artist:val("m_artist"), phone:val("m_phone"), filename:snapBaseName()+".pdf",
     start: d?fmtClock(d):"",
     total: ($("r_total")||{}).textContent||"", end:($("r_end")||{}).textContent||"",
     lid:{t:val("cfg_lid"),  clock:($("chk_lid_time")||{}).textContent||""},
@@ -1606,6 +1616,11 @@ function buildPdf(J, data){
   doc.text(String(data.name||""), R, y, {align:"right"});
   y+=9; doc.setDrawColor(20); doc.setLineWidth(0.8); doc.line(L,y,R,y); y+=19;
   doc.setTextColor(20); doc.setFontSize(9);
+  if(data.artist||data.phone){
+    doc.setFont("helvetica","bold");
+    doc.text(`Name: ${data.artist||"—"}      Phone: ${data.phone||"—"}`, L, y); y+=14;
+    doc.setFont("helvetica","normal");
+  }
   doc.text(`Kiln: ${data.kiln||"—"}      Program #: ${data.prog||"—"}      Glass: ${data.brand||"—"}      Anneal thickness: ${data.thick||"—"}`, L, y); y+=14;
   doc.text(`Start: ${data.start||"—"}      Total: ${data.total||"—"}      Est. end: ${data.end||"—"}`, L, y); y+=18;
   doc.setFont("helvetica","bold"); doc.text("Checks", L, y); y+=12;
@@ -1664,6 +1679,8 @@ function buildPdf(J, data){
   // footer, pinned bottom
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(140);
   doc.text("Joshua Hargrave · Kiln Forming Workbook 2026", CX, FOOT, {align:"center"});
+  if(data.filename){ doc.setFontSize(7); doc.setTextColor(165);
+    doc.text(String(data.filename), CX, FOOT+11, {align:"center"}); }
   return doc;
 }
 
