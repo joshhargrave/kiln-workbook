@@ -26,9 +26,9 @@
     --ink:#e8e6e1;
     --ink-dim:#8b9099;
     --ink-faint:#5f656d;
-    --amber:#ffb040;
-    --amber-fill:rgba(255,176,64,0.09);
+    --amber:#ffb040;    --amber-fill:rgba(255,176,64,0.09);
     --amber-line:rgba(255,176,64,0.35);
+    --book:#7fc4a3;  /* recommended / auto-filled anneal values */
     /* heat scale — blackbody glow of hot glass */
     --h-cold:#5b7089;
     --h-red:#b23a2e;
@@ -149,6 +149,10 @@
   table.sched td.inp input{border:none;border-radius:0;background:var(--amber-fill);text-align:right;
     padding:5px 9px;font-size:13px;box-shadow:none}
   table.sched td.inp input:focus{background:rgba(255,176,64,0.16);box-shadow:inset 0 0 0 1px var(--amber-line)}
+  /* recommended (auto-filled) vs edited cooling-tail cells */
+  table.sched td.inp input.book{color:var(--book);box-shadow:inset 2px 0 0 var(--book)}
+  table.sched td.inp input.mod{color:var(--amber);box-shadow:inset 2px 0 0 var(--amber)}
+  table.sched td.inp input.book:focus,table.sched td.inp input.mod:focus{box-shadow:inset 0 0 0 1px var(--amber-line)}
   table.sched td.calc .cell{color:var(--ink)}
   table.sched td.dim .cell{color:var(--ink-faint)}
   td.clock .cell{color:var(--ink)}
@@ -158,6 +162,8 @@
   .legend .swatch{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px;border:1px solid var(--hairline-bright)}
   .legend .swatch.inp{background:var(--amber-fill);border-color:var(--amber-line)}
   .legend .swatch.out{background:var(--raised-2)}
+  .legend .swatch.book{background:var(--book);border-color:var(--book)}
+  .legend .swatch.mod{background:var(--amber);border-color:var(--amber)}
 
   /* ---- firing curve ---- */
   .curve-panel{padding-bottom:14px}
@@ -180,6 +186,38 @@
   .anneal-head{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--amber);
     padding:8px 10px;background:rgba(255,176,64,0.06);border:1px solid var(--amber-line);border-radius:3px;margin-bottom:10px;text-align:center}
 
+  /* ---- checks & timing ---- */
+  .field-check .chk-toggle{display:flex;align-items:center;gap:8px;padding:7px 0;
+    font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink);cursor:pointer;line-height:1.3}
+  .field-check input[type=checkbox]{width:16px;height:16px;flex:0 0 auto;accent-color:var(--amber);cursor:pointer;margin:0}
+  /* second config row: anti-sucker + AFAP rate */
+  .check-cfg2{display:grid;grid-template-columns:1fr;gap:12px 16px;margin-top:14px;
+    padding-top:14px;border-top:1px solid var(--hairline)}
+  @media(min-width:560px){.check-cfg2{grid-template-columns:1fr 1fr}}
+  /* three date/time check cards, stacked so the clock can be large */
+  .check-list{display:flex;flex-direction:column;gap:9px}
+  .chk{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;
+    background:var(--void);border:1px solid var(--hairline);border-left-width:3px;
+    border-radius:5px;padding:11px 15px}
+  .chk-cold{border-left-color:var(--h-cold)}
+  .chk-orange{border-left-color:var(--h-orange)}
+  .chk-yellow{border-left-color:var(--h-yellow)}
+  .chk-off{opacity:.5}
+  .chk-off .chk-clock{color:var(--ink-faint);font-weight:500;letter-spacing:0}
+  .chk-temp{display:flex;align-items:baseline;gap:3px;white-space:nowrap}
+  .chk-temp input{width:70px;background:var(--amber-fill);border:1px solid var(--amber-line);
+    border-radius:3px;color:var(--ink);font-family:"JetBrains Mono",monospace;font-size:14px;
+    text-align:right;padding:5px 7px;-moz-appearance:textfield;appearance:textfield}
+  .chk-temp input::-webkit-outer-spin-button,.chk-temp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .chk-temp input:focus{outline:none;box-shadow:inset 0 0 0 1px var(--amber)}
+  .chk-temp .u-lbl{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-dim)}
+  .chk-temp .proc-temp{font-family:"JetBrains Mono",monospace;font-size:14px;color:var(--ink-dim);
+    padding:5px 7px;display:inline-block;min-width:70px;text-align:right}
+  .chk-lbl{font-size:13px;color:var(--ink-dim);line-height:1.3;min-width:0}
+  .chk-clock{font-family:"JetBrains Mono",monospace;font-size:19px;font-weight:700;color:var(--ink);
+    letter-spacing:-0.01em;text-align:right;white-space:nowrap}
+  @media(max-width:520px){.chk-clock{font-size:16px}.chk{gap:9px;padding:10px 12px}}
+
   footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--hairline);
     display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
     font-size:11.5px;color:var(--ink-faint);font-family:"JetBrains Mono",monospace}
@@ -197,10 +235,12 @@
     .panel{background:#fff;border:none;padding:0;margin-bottom:8px}
     .panel + .panel{margin-top:6px}
     .phead{margin-bottom:5px;border-bottom:1px solid #000}
-    /* cap curve so job+start+segments+curve+totals all fit one page */
-    .curve-box{height:2.05in;overflow:hidden}
+    /* drop empty segment rows and size the curve so page 1 holds everything */
+    table.sched tr.blankrow{display:none}
+    .curve-panel{break-inside:avoid}
+    .curve-box{height:2.5in;overflow:hidden}
     svg.curve{height:100%;width:100%}
-    .readouts{grid-template-columns:repeat(4,1fr)}
+    .readouts{grid-template-columns:repeat(2,1fr)}
     .phead h2{color:#000;font-size:11px}.phead .n{color:#555}
     input,select{background:#fff !important;border:none;color:#000;padding:1px 3px;font-size:10px}
     .meta-grid,.start-row{gap:4px 10px}
@@ -209,6 +249,7 @@
     .ro{background:#fff;padding:5px 8px}
     .ro .k{color:#333}.ro .v{font-size:12px;color:#000}.ro.hot .v{color:#000;font-weight:700}
     table.sched{min-width:0;font-size:9.5px}
+    table.sched td.inp input.book,table.sched td.inp input.mod{color:#000 !important;box-shadow:none !important}
     table.sched th{color:#000;border-color:#000;padding:0 5px 4px}
     table.sched td{border-color:#bbb}
     table.sched td .cell,table.sched td.inp input,table.sched td.seg{padding:2px 5px;color:#000}
@@ -230,6 +271,20 @@
     table.glass td{border-color:#bbb}
     table.glass td input{background:#fff !important;padding:11px 5px;color:#000}
     table.glass tr.total .lbl,table.glass tr.total .val{color:#000;padding-top:12px}
+    /* checks & timing — keep the clock times on the kiln sheet, compact.
+       config knobs aren't needed on paper, so hide them. */
+    .checks-panel{break-inside:avoid}
+    .check-cfg2{display:none}
+    .readouts{margin-bottom:6px !important}
+    .check-list{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+    .chk{background:#fff;border:1px solid #999;border-left:2px solid #000;padding:5px 7px;gap:4px;
+      grid-template-columns:1fr;align-items:start}
+    .chk-cold,.chk-orange,.chk-yellow{border-left-color:#000}
+    .chk-off{opacity:1}
+    .chk-temp input,.chk-temp .proc-temp{font-size:10px;color:#000;background:#fff !important;border:none;padding:0;width:auto;min-width:0}
+    .chk-temp .u-lbl{color:#333}
+    .chk-lbl{color:#333;font-size:9px}
+    .chk-clock{color:#000;font-size:11px;font-weight:700;text-align:left}
   }
 </style>
 </head>
@@ -241,7 +296,7 @@
   <header>
     <div class="title-block">
       <p class="eyebrow">Kiln Forming Workbook · Casting</p>
-      <h1>Firing Schedule</h1>
+      <h1>Firing Schedule for Casting</h1>
       <p class="sub">Enter your ramp rates, target temperatures, and holds. Ramp time, segment time, cumulative time, and the clock time each segment finishes are calculated as you type.</p>
     </div>
     <div class="header-actions">
@@ -249,7 +304,7 @@
         <button type="button" id="unit-f" class="on" onclick="setUnit('F')">°F</button>
         <button type="button" id="unit-c" onclick="setUnit('C')">°C</button>
       </div>
-      <button class="print-btn" onclick="window.print()">Print for kiln</button>
+      <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
     </div>
   </header>
 
@@ -263,7 +318,6 @@
       <div class="field"><label>Glass brand</label>
         <select id="m_brand"><option>Bullseye</option><option>Gaffer</option><option>Other</option></select></div>
       <div class="field"><label>Annealing thickness</label><select id="m_thick"></select></div>
-      <div class="field"><label>Starting kiln temp °<span class="u-lbl">F</span></label><input id="m_start" class="num" type="number" value="75" min="0"></div>
     </div>
   </div>
 
@@ -280,75 +334,80 @@
     </div>
   </div>
 
-  <div class="cols">
-    <!-- LEFT: schedule + curve -->
-    <div>
-      <div class="panel" style="margin-bottom:22px">
-        <div class="phead"><span class="n">02</span><h2>Segments</h2>
-          <span class="hint">amber cells are inputs · everything else calculates</span></div>
-        <div class="sched-wrap">
-          <table class="sched">
-            <thead><tr>
-              <th class="l">Seg</th>
-              <th>Rate<span class="u">°<span class="u-lbl">F</span>/hr</span></th>
-              <th>Target<span class="u">°<span class="u-lbl">F</span></span></th>
-              <th>Hold<span class="u">hr</span></th>
-              <th>Hold<span class="u">min</span></th>
-              <th>Ramp<span class="u">h:mm</span></th>
-              <th>Segment<span class="u">h:mm</span></th>
-              <th>Cumulative<span class="u">h:mm</span></th>
-              <th class="l">Segment Complete Time</th>
-            </tr></thead>
-            <tbody id="segbody"></tbody>
-          </table>
-        </div>
-        <div class="legend">
-          <span><span class="swatch inp"></span>Input cell</span>
-          <span><span class="swatch out"></span>Calculated</span>
-          <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
-        </div>
-      </div>
+  <!-- checks & timing (with totals) -->
+  <div class="panel checks-panel" style="margin-bottom:22px">
+    <div class="phead"><span class="n">02</span><h2>Checks &amp; timing</h2>
+      <span class="hint">nudge rates, holds &amp; delay to move these</span></div>
+    <div class="readouts readouts-2" style="margin-bottom:16px">
+      <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
+      <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
+    </div>
 
-      <div class="panel curve-panel">
-        <div class="phead"><span class="n">03</span><h2>Firing curve</h2>
-          <span class="hint">temperature over cumulative time</span></div>
-        <div class="curve-box"><svg class="curve" id="curve" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet"></svg></div>
-        <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
+    <div class="check-list">
+      <div class="chk chk-cold" id="chk_lid">
+        <div class="chk-temp"><input id="cfg_lid" data-k="target" type="number" value="212" min="0"><span class="u-lbl">F</span></div>
+        <div class="chk-lbl">Close lid · vents stay open</div>
+        <div class="chk-clock" id="chk_lid_time">—</div>
+      </div>
+      <div class="chk chk-orange" id="chk_vent">
+        <div class="chk-temp"><input id="cfg_vent" data-k="target" type="number" value="1250" min="0"><span class="u-lbl">F</span></div>
+        <div class="chk-lbl">Close vents · check mold</div>
+        <div class="chk-clock" id="chk_vent_time">—</div>
+      </div>
+      <div class="chk chk-yellow" id="chk_proc">
+        <div class="chk-temp"><span class="proc-temp" id="chk_proc_temp">—</span></div>
+        <div class="chk-lbl">Process temp · check + hold</div>
+        <div class="chk-clock" id="chk_proc_time">—</div>
       </div>
     </div>
 
-    <!-- RIGHT: totals + anneal reference -->
-    <div>
-      <div class="panel" style="margin-bottom:22px">
-        <div class="phead"><span class="n">04</span><h2>Totals</h2></div>
-        <div class="readouts">
-          <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
-          <div class="ro hot"><div class="k">Top temp</div><div class="v" id="r_top">—</div></div>
-          <div class="ro"><div class="k">Check at top temp</div><div class="v" id="r_check">—</div></div>
-          <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
-        </div>
-      </div>
-
-      <div class="panel anneal-panel">
-        <div class="phead"><span class="n">05</span><h2>Anneal reference</h2>
-          <span class="hint">screen only</span></div>
-        <p class="anneal-note">Published anneal schedule for your <b>brand</b> and <b>thickness</b>, rounded up to the next listed thickness. This is a readout; it does <b>not</b> change the segments above. Copy the values in yourself if you want to use them.</p>
-        <div class="anneal-pick">
-          <div class="field"><label>Brand</label>
-            <select id="a_brand"><option>Bullseye</option><option>Gaffer</option></select></div>
-          <div class="field"><label>Thickness</label><select id="a_thick"></select></div>
-        </div>
-        <div id="a_head" class="anneal-head">—</div>
-        <table class="anneal"><tbody id="a_body"></tbody></table>
-      </div>
+    <div class="check-cfg2">
+      <div class="field field-check"><label>Anti-sucker step</label>
+        <label class="chk-toggle"><input id="cfg_anti" type="checkbox" checked><span>Hold at 1250°F on cool</span></label></div>
+      <div class="field"><label>AFAP est. rate °<span class="u-lbl">F</span>/hr</label>
+        <input id="cfg_afap" data-k="rate" type="number" value="450" min="1"></div>
     </div>
   </div>
 
+  <div class="panel" style="margin-bottom:22px">
+    <div class="phead"><span class="n">03</span><h2>Segments</h2></div>
+    <div class="sched-wrap">
+      <table class="sched">
+        <thead><tr>
+          <th class="l">Seg</th>
+          <th>Rate<span class="u">°<span class="u-lbl">F</span>/hr</span></th>
+          <th>Target<span class="u">°<span class="u-lbl">F</span></span></th>
+          <th>Hold<span class="u">hr</span></th>
+          <th>Hold<span class="u">min</span></th>
+          <th>Ramp<span class="u">h:mm</span></th>
+          <th>Segment<span class="u">h:mm</span></th>
+          <th>Cumulative<span class="u">h:mm</span></th>
+          <th class="l">Segment Complete Time</th>
+        </tr></thead>
+        <tbody id="segbody"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><span class="swatch inp"></span>Input cell</span>
+      <span><span class="swatch out"></span>Calculated</span>
+      <span><span class="swatch book"></span>Recommended anneal (auto)</span>
+      <span><span class="swatch mod"></span>Edited by you</span>
+      <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+    </div>
+  </div>
+
+  <div class="panel curve-panel">
+    <div class="phead"><span class="n">04</span><h2>Firing curve</h2>
+      <span class="hint">temperature over cumulative time</span></div>
+    <div class="curve-box"><svg class="curve" id="curve" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
+  </div>
+
   <div class="panel log-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">06</span><h2>Firing record</h2>
+    <div class="phead"><span class="n">05</span><h2>Firing record</h2>
       <span class="hint">your notes, included in the printed PDF</span></div>
-    <div class="field"><label>Description / sketch</label>
-      <textarea id="lg_desc" rows="3" placeholder="What you're making, form notes, sketch…"></textarea></div>
+    <div class="field"><label>Description / sketch / dimensions</label>
+      <textarea id="lg_desc" rows="3" placeholder=""></textarea></div>
 
     <div class="log-sub">Glass used</div>
     <table class="glass">
@@ -362,8 +421,8 @@
       </tr></tfoot>
     </table>
 
-    <div class="field"><label>Notes on results: success / devit / cracking / flashing / ideas for next time</label>
-      <textarea id="lg_notes" rows="3" placeholder="How it came out, what to change next firing…"></textarea></div>
+    <div class="field"><label>Notes on results: success / failure / ideas for next time</label>
+      <textarea id="lg_notes" rows="3" placeholder=""></textarea></div>
   </div>
 
   <footer>
@@ -389,40 +448,40 @@ const THICKNESSES = [
 // anneal charts — [inch, annealTemp, annealSoakHrs, c1rate,c1temp, c2rate,c2temp, finalRate,finalTemp]
 const ANNEAL = {
   Bullseye:[
-    [0.25,900,1, 150,800, 270,700, 900,70],
-    [0.5, 900,2, 100,800, 180,700, 600,70],
-    [0.75,900,3,  45,800,  81,700, 270,70],
-    [1,   900,4,  27,800,  49,700, 162,70],
-    [1.5, 900,6,  12,800,  22,700,  72,70],
-    [2,   900,8, 6.8,800,  12,700,  41,70],
-    [2.5, 900,10,4.3,800,   8,700,  26,70],
-    [3,   900,12,  3,800, 5.4,700,  18,70],
-    [4,   900,16,1.7,800, 3.1,700,  10,70],
-    [6,   900,24,0.75,800,1.3,700, 4.5,70],
-    [8,   900,32,0.42,800,0.76,700,2.5,70]
+    [0.25,900,1, 150,800, 270,700, 900,100],
+    [0.5, 900,2, 100,800, 180,700, 600,100],
+    [0.75,900,3,  45,800,  81,700, 270,100],
+    [1,   900,4,  27,800,  49,700, 162,100],
+    [1.5, 900,6,  12,800,  22,700,  72,100],
+    [2,   900,8, 6.8,800,  12,700,  41,100],
+    [2.5, 900,10,4.3,800,   8,700,  26,100],
+    [3,   900,12,  3,800, 5.4,700,  18,100],
+    [4,   900,16,1.7,800, 3.1,700,  10,100],
+    [6,   900,24,0.75,800,1.3,700, 4.5,100],
+    [8,   900,32,0.42,800,0.76,700,2.5,100]
   ],
   Gaffer:[
-    [0.5, 806,2, 120,680, 240,590, 720,70],
-    [0.75,806,3,  52,680, 104,590, 312,70],
-    [1,   806,4,  29,680,  58,590, 174,70],
-    [1.5, 806,6,  13,680,  26,590,  78,70],
-    [2,   806,8, 7.8,680,15.6,590,46.8,70],
-    [2.5, 806,10,5.2,644,10.4,554,31.2,70],
-    [3,   806,12,3.3,644, 6.6,554,19.8,70],
-    [3.5, 806,14,2.5,644,   5,554,  15,70],
-    [4,   806,16,1.8,644, 3.6,554,10.8,70],
-    [4.5, 806,18,1.6,644, 3.2,554, 9.6,70],
-    [5,   806,20,1.3,644, 2.6,554, 7.8,70],
-    [5.5, 806,22,1.1,644, 2.2,554, 6.6,70],
-    [6,   806,24,0.9,608, 1.8,518, 5.4,70],
-    [6.5, 806,26,0.7,608, 1.4,518, 4.2,70],
-    [7,   806,28,0.6,608, 1.2,518, 3.6,70],
-    [7.5, 806,30,0.5,608,   1,518,   3,70],
-    [8,   806,32,0.47,608,0.94,518,2.8,70],
-    [8.5, 806,34,0.41,608,0.8,518, 2.4,70],
-    [9,   806,36,0.35,608,0.7,518, 2.1,70],
-    [9.5, 806,38,0.32,608,0.64,518,1.9,70],
-    [10,  806,40,0.29,608,0.58,518,1.74,70]
+    [0.5, 806,2, 120,680, 240,590, 720,100],
+    [0.75,806,3,  52,680, 104,590, 312,100],
+    [1,   806,4,  29,680,  58,590, 174,100],
+    [1.5, 806,6,  13,680,  26,590,  78,100],
+    [2,   806,8, 7.8,680,15.6,590,46.8,100],
+    [2.5, 806,10,5.2,644,10.4,554,31.2,100],
+    [3,   806,12,3.3,644, 6.6,554,19.8,100],
+    [3.5, 806,14,2.5,644,   5,554,  15,100],
+    [4,   806,16,1.8,644, 3.6,554,10.8,100],
+    [4.5, 806,18,1.6,644, 3.2,554, 9.6,100],
+    [5,   806,20,1.3,644, 2.6,554, 7.8,100],
+    [5.5, 806,22,1.1,644, 2.2,554, 6.6,100],
+    [6,   806,24,0.9,608, 1.8,518, 5.4,100],
+    [6.5, 806,26,0.7,608, 1.4,518, 4.2,100],
+    [7,   806,28,0.6,608, 1.2,518, 3.6,100],
+    [7.5, 806,30,0.5,608,   1,518,   3,100],
+    [8,   806,32,0.47,608,0.94,518,2.8,100],
+    [8.5, 806,34,0.41,608,0.8,518, 2.4,100],
+    [9,   806,36,0.35,608,0.7,518, 2.1,100],
+    [9.5, 806,38,0.32,608,0.64,518,1.9,100],
+    [10,  806,40,0.29,608,0.58,518,1.74,100]
   ]
 };
 
@@ -438,6 +497,26 @@ const DEFAULT_SEGMENTS = [
   {rate:"160",  target:"150", hh:"0", hm:"0"}
 ];
 const N_ROWS = 12;
+
+/* ---------------- config (Fahrenheit canonical) ----------------
+   AFAP_THRESHOLD: a numeric rate at or above this (e.g. 9999) is treated as
+   "as fast as possible" — same as typing AFAP. Both then use the editable
+   placeholder rate below for TIME estimates, since a real kiln cooling
+   with the door shut is not instantaneous. Defaults chosen as a middle-of-
+   the-road natural cool for a loaded caster; edit per kiln. */
+const AFAP_THRESHOLD = 9999;
+const DEFAULT_AFAP_RATE = 450;   // °F/hr, editable
+const START_TEMP_F = 75;         // assumed room-temp kiln start (°F)
+// check-point default temperatures (°F) and process-hold monitor interval
+const DEFAULT_LID   = 212;       // close lid, vents still open (drive off water)
+const DEFAULT_VENT  = 1250;      // close vents + first visual mold check
+const DEFAULT_INTERVAL = 20;     // minutes between checks during process hold
+// canonical AFAP placeholder rate, read from the config field
+function afapRate(){
+  const el = $("cfg_afap");
+  const v = el ? parseFloat(el.dataset.f) : NaN;
+  return (isNaN(v) || v<=0) ? DEFAULT_AFAP_RATE : v;
+}
 
 /* ---------------- helpers ---------------- */
 const $ = id => document.getElementById(id);
@@ -455,6 +534,7 @@ function toF(v, kind){
   const s = String(v).trim();
   if(s==="" || isNaN(Number(s))) return s;         // blank or AFAP text: literal
   const n = Number(s);
+  if(kind==="rate" && n>=AFAP_THRESHOLD) return s;  // AFAP sentinel (9999): never convert
   if(UNIT==="F") return n;
   return kind==="rate" ? n*9/5 : n*9/5+32;
 }
@@ -463,6 +543,7 @@ function fromF(f, kind){
   const s = String(f).trim();
   if(s==="" || isNaN(Number(s))) return s;
   const n = Number(s);
+  if(kind==="rate" && n>=AFAP_THRESHOLD) return s;  // AFAP sentinel (9999): show unchanged
   const out = UNIT==="F" ? n : (kind==="rate" ? n*5/9 : (n-32)*5/9);
   return String(Math.round(out));
 }
@@ -474,7 +555,7 @@ function dispNum(f, kind){
 }
 const dispTemp = f => Math.round(dispNum(f,"temp"));
 
-function unitInputs(){ return document.querySelectorAll('input[data-k="rate"], input[data-k="target"], #m_start'); }
+function unitInputs(){ return document.querySelectorAll('input[data-k="rate"], input[data-k="target"]'); }
 // call when the user edits a temp/rate field: capture canonical F, then recalc
 function onFieldInput(el){ el.dataset.f = toF(el.value, kindOf(el)); recalc(); }
 // seed data-f from the current (Fahrenheit) defaults at load
@@ -488,19 +569,21 @@ function setUnit(u){
   $("unit-c").classList.toggle("on", UNIT==="C");
   document.querySelectorAll(".u-lbl").forEach(s => s.textContent = UNIT);
   recalc();
-  renderAnneal();
 }
 
 function isAFAP(raw){
+  // "AFAP" text OR a sentinel numeric (>= 9999) both mean as-fast-as-possible
   if(raw==null) return false;
   const s = String(raw).trim();
   if(s==="") return false;
-  return isNaN(Number(s)); // any non-numeric text (e.g. "AFAP") ramps as fast as possible
+  if(isNaN(Number(s))) return true;          // e.g. "AFAP"
+  return Number(s) >= AFAP_THRESHOLD;          // e.g. 9999
 }
 function rampHours(rate, target, prevTemp){
-  // matches: IF(rate numeric, ABS(target-prev)/rate, 0)
-  const r = Number(rate);
-  if(isNaN(r) || r===0) return 0;      // AFAP text or 0 -> instantaneous
+  // AFAP (text or 9999) uses the editable placeholder rate so time is realistic;
+  // otherwise ABS(target-prev)/rate, matching the sheet.
+  const r = isAFAP(rate) ? afapRate() : Number(rate);
+  if(isNaN(r) || r===0) return 0;
   return Math.abs(target - prevTemp)/r;
 }
 function fmtHM(hrs){
@@ -561,7 +644,7 @@ function buildRows(){
 /* ---------------- core recalc ---------------- */
 function recalc(){
   const rows = [];
-  const startTemp = parseFloat($("m_start").dataset.f)||0;
+  const startTemp = START_TEMP_F;
   const base = startDateTime();
   let prevTemp = startTemp;
   let cum = 0;
@@ -621,17 +704,63 @@ function recalc(){
 
   // ----- totals -----
   const total = cum;
-  $("r_total").innerHTML = rows.length ? `${fmtDur(total)} <small>· ${total.toFixed(2)}h</small>` : "—";
-  $("r_top").textContent = rows.length ? `${dispTemp(maxTarget)}°${UNIT}` : "—";
+  $("r_total").textContent = rows.length ? fmtDur(total) : "—";
   if(base && rows.length){
-    $("r_check").textContent = fmtClock(new Date(base.getTime()+maxAtCum*3600*1000));
-    $("r_end").textContent   = fmtClock(new Date(base.getTime()+total*3600*1000));
+    $("r_end").textContent = fmtClock(new Date(base.getTime()+total*3600*1000));
   } else {
-    $("r_check").textContent = "—";
-    $("r_end").textContent   = "—";
+    $("r_end").textContent = "—";
   }
 
+  renderChecks(rows.length ? maxAtCum : null, rows.length ? maxTarget : null);
+  paintBookCells();
   drawCurve(startTemp, rows.length ? maxTarget : 0, total);
+}
+
+/* ---------------- check-point timing ----------------
+   Returns the cumulative time (hours) at which the kiln FIRST heats up
+   through temperature T (canonical °F), interpolating along the ramp it
+   falls in. Returns 0 if already at/above T at start, or null if never
+   reached. Uses the same AFAP-aware rampHours as the table, so the times
+   move live as rates/holds/delay are edited. */
+function crossTimeF(T){
+  if(T==null || isNaN(T)) return null;
+  const startTemp = START_TEMP_F;
+  if(startTemp >= T) return 0;
+  let prevTemp = startTemp, cum = 0, chainBroken = false;
+  for(let i=0;i<N_ROWS;i++){
+    const rateRaw=(document.querySelector(`input[data-k="rate"][data-i="${i}"]`).dataset.f||"").trim();
+    const tgtRaw =(document.querySelector(`input[data-k="target"][data-i="${i}"]`).dataset.f||"").trim();
+    if(rateRaw===""||tgtRaw===""){ if(i>0) chainBroken=true; if(chainBroken) break; else continue; }
+    if(chainBroken) break;
+    const target=Number(tgtRaw);
+    const rh=rampHours(rateRaw,target,prevTemp);
+    if(prevTemp < T && target >= T){        // T crossed on the way up in this ramp
+      const frac = (target===prevTemp) ? 0 : (T-prevTemp)/(target-prevTemp);
+      return cum + rh*frac;
+    }
+    cum += rh;
+    const hh=parseFloat(document.querySelector(`input[data-k="hh"][data-i="${i}"]`).value)||0;
+    const hm=parseFloat(document.querySelector(`input[data-k="hm"][data-i="${i}"]`).value)||0;
+    cum += hh + hm/60;
+    prevTemp = target;
+  }
+  return null;
+}
+
+/* Update the three static check cards in place (text only, so the temp
+   inputs keep focus while typing). procCum/procTemp come from recalc. */
+function renderChecks(procCum, procTemp){
+  const base = startDateTime();
+  const set = (cardId, timeId, t)=>{
+    const card=$(cardId), el=$(timeId);
+    const has = t!=null && isFinite(t);
+    el.textContent = has ? (base ? fmtClock(new Date(base.getTime()+t*3600*1000)) : "set start date") : "not reached";
+    card.classList.toggle("chk-off", !has);
+  };
+  set("chk_lid","chk_lid_time",   crossTimeF(parseFloat($("cfg_lid").dataset.f)));
+  set("chk_vent","chk_vent_time", crossTimeF(parseFloat($("cfg_vent").dataset.f)));
+  set("chk_proc","chk_proc_time", procCum);
+  $("chk_proc_temp").textContent = (procTemp!=null && !isNaN(procTemp)) ? `${dispTemp(procTemp)}°${UNIT}` : "—";
 }
 
 /* ---------------- firing curve ---------------- */
@@ -660,7 +789,7 @@ function drawCurve(startTemp, maxTarget, total){
   }
 
   const tMax = Math.max(total, 1);
-  const yMax = Math.max(maxTarget, startTemp, 1) * 1.06;
+  const yMax = Math.max(maxTarget, startTemp, 1) * 1.24;   // headroom up top for marker labels
   const X = t => padL + (t/tMax)*plotW;
   const Y = v => padT + plotH - (v/yMax)*plotH;
 
@@ -719,7 +848,28 @@ function drawCurve(startTemp, maxTarget, total){
 
   const yLabel = `<text x="14" y="${padT+plotH/2}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="10" fill="var(--ink-faint)" transform="rotate(-90 14 ${padT+plotH/2})" letter-spacing="1">°${UNIT}</text>`;
 
-  svg.innerHTML = `<defs>${grad}</defs>${grid}${area}${line}${yLabel}`;
+  // check-point markers (close lid, close vent + mold check, process check)
+  let marks="";
+  const markDefs = [
+    {t: crossTimeF(parseFloat($("cfg_lid").dataset.f)),  name:"Close lid",     col:"var(--h-cold)"},
+    {t: crossTimeF(parseFloat($("cfg_vent").dataset.f)), name:"Close vent",    col:"var(--h-orange)"},
+    {t: (maxTarget>0 ? crossTimeF(maxTarget) : null),    name:"Process check", col:"var(--h-yellow)"}
+  ];
+  markDefs.forEach((m,idx)=>{
+    if(m.t==null || !isFinite(m.t) || m.t>tMax+1e-9) return;
+    const x=X(m.t);
+    const tstr = base
+      ? new Date(base.getTime()+m.t*3600*1000).toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"})
+      : fmtHM(m.t);
+    const nearRight = x > (padL + plotW*0.66);
+    const anchor = nearRight ? "end" : "start";
+    const tx = nearRight ? x-4 : x+4;
+    const ly = padT + 11 + idx*13;   // three distinct rows so labels never overlap
+    marks += `<line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${(padT+plotH).toFixed(1)}" stroke="${m.col}" stroke-width="2" stroke-dasharray="5 4" opacity="0.9"/>`;
+    marks += `<text x="${tx.toFixed(1)}" y="${ly}" text-anchor="${anchor}" font-family="Space Grotesk, sans-serif" font-size="11.5" font-weight="700" fill="${m.col}">${m.name} ${tstr}</text>`;
+  });
+
+  svg.innerHTML = `<defs>${grad}</defs>${grid}${area}${line}${marks}${yLabel}`;
   $("curve-xmax").textContent = tMax.toFixed(tMax<10?1:0)+" h";
 }
 
@@ -732,25 +882,84 @@ function lookupAnneal(brand, inch){
   if(!row) row = chart[chart.length-1];
   return row;
 }
-function renderAnneal(){
-  const brand = $("a_brand").value;
-  const inch = parseFloat($("a_thick").value);
-  const row = lookupAnneal(brand, inch);
-  const head=$("a_head"), body=$("a_body");
-  if(!row){ head.textContent="—"; body.innerHTML=""; return; }
-  const label = THICKNESSES.find(t=>t[1]===row[0]);
-  head.textContent = `${brand} · ${label?label[0]:row[0]+'"'}`;
-  const [ ,aT,aSoak,c1r,c1t,c2r,c2t,fr,ft] = row;
-  // chart data is stored in Fahrenheit — convert for display
-  const cT = f => Math.round(UNIT==="F" ? f : (f-32)*5/9);   // temperature
-  const cR = f => Math.round(UNIT==="F" ? f : f*5/9);         // rate (per-hour delta)
-  const R = (lbl,val)=>`<tr><td class="lbl">${lbl}</td><td class="val">${val}</td></tr>`;
-  const cool = (r,t)=>`${cR(r)} °${UNIT}/hr <span class="arrow">→</span> ${cT(t)}°${UNIT}`;
-  body.innerHTML =
-    R("Anneal soak", `${cT(aT)}°${UNIT} · ${aSoak} hr`) +
-    R("1st cooling", cool(c1r,c1t)) +
-    R("2nd cooling", cool(c2r,c2t)) +
-    R("Final cooling", cool(fr,ft));
+
+/* ---------------- cooling tail layout ----------------
+   Everything after the process soak (row 3 onward) is laid out from a model:
+   an optional anti-sucker soak, then the anneal soak + three cooling steps
+   pulled from the Job's glass + annealing thickness. Anything left over is
+   cleared. The heat-up and process rows (1–3 on screen) are never touched.
+   Rows stay editable; changing glass, thickness, or the anti-sucker toggle
+   re-lays these rows. */
+const PROCESS_ROW = 2;           // 0-indexed: rapid-heat → top (process) temp
+const ANTI_COOL_RATE = 50;       // controlled cool from anti-sucker soak to anneal soak (°F/hr)
+function segInput(kind,i){ return document.querySelector(`input[data-k="${kind}"][data-i="${i}"]`); }
+// kiln controllers take whole-number rates: round DOWN (slower = safer), floor at 1.
+// AFAP sentinel passes straight through.
+function progRate(r){
+  if(r===9999 || isAFAP(String(r))) return 9999;
+  const f = Math.floor(r);
+  return f < 1 ? 1 : f;
+}
+function writeSeg(i, o){
+  // temps/rates are canonical Fahrenheit; show exact in °F, rounded-converted in °C
+  if(o.rate!==undefined){ const el=segInput("rate",i);   el.dataset.f=String(o.rate);   el.value = UNIT==="F"?String(o.rate):fromF(o.rate,"rate"); }
+  if(o.target!==undefined){ const el=segInput("target",i); el.dataset.f=String(o.target); el.value = UNIT==="F"?String(o.target):fromF(o.target,"temp"); }
+  if(o.hh!==undefined){ segInput("hh",i).value=String(o.hh); }
+  if(o.hm!==undefined){ segInput("hm",i).value=String(o.hm); }
+}
+// record the recommended (book) baseline on a written row, for colour + tooltip
+function markBook(i, s){
+  ["rate","target","hh","hm"].forEach(k=>{
+    const el=segInput(k,i);
+    el.dataset.base = (k==="rate"||k==="target") ? el.dataset.f : el.value;
+  });
+  const rEl=segInput("rate",i);
+  if(String(s.rate)==="9999"){ rEl.title="Recommended: AFAP"; }
+  else {
+    let t = "Recommended: " + (UNIT==="F"?s.rate:fromF(s.rate,"rate")) + " °"+UNIT+"/hr";
+    if(s.rateExact!==undefined && s.rateExact!==s.rate) t += " (book "+s.rateExact+", rounded for kiln entry)";
+    rEl.title = t;
+  }
+  segInput("target",i).title = "Recommended: " + (UNIT==="F"?s.target:fromF(s.target,"temp")) + " °"+UNIT;
+}
+function clearBook(i){
+  ["rate","target","hh","hm"].forEach(k=>{ const el=segInput(k,i); delete el.dataset.base; el.classList.remove("book","mod"); el.title=""; });
+}
+// green when a managed cell still matches its book value, amber once edited
+function paintBookCells(){
+  for(let i=0;i<N_ROWS;i++){
+    ["rate","target","hh","hm"].forEach(k=>{
+      const el=segInput(k,i);
+      if(el.dataset.base===undefined){ el.classList.remove("book","mod"); return; }
+      const cur = (k==="rate"||k==="target") ? (el.dataset.f??"") : (el.value??"");
+      const same = String(cur)===String(el.dataset.base);
+      el.classList.toggle("book", same);
+      el.classList.toggle("mod", !same);
+    });
+  }
+}
+function clearSeg(i){
+  ["rate","target","hh","hm"].forEach(k=>{ const el=segInput(k,i); el.value=""; if(k==="rate"||k==="target") el.dataset.f=""; });
+}
+function layoutTail(){
+  const anti = $("cfg_anti").checked;
+  const row  = lookupAnneal($("m_brand").value, parseFloat($("m_thick").value));
+  if(!row){ recalc(); return; }   // "Other" / no chart: leave existing rows untouched
+  const tail = [];
+  if(anti) tail.push({rate:9999, target:1250, hh:2, hm:0});   // anti-sucker: AFAP → 1250, hold
+  {
+    const [ ,aT,aSoak,c1r,c1t,c2r,c2t,fr,ft] = row;
+    const sh = Math.floor(aSoak), sm = Math.round((aSoak-sh)*60);
+    // anneal soak: controlled 50°/hr from the anti-sucker hold, else AFAP straight down
+    tail.push({rate: anti?ANTI_COOL_RATE:9999, target:aT, hh:sh, hm:sm});
+    tail.push({rate:progRate(c1r), target:c1t, hh:0, hm:0, rateExact:c1r});
+    tail.push({rate:progRate(c2r), target:c2t, hh:0, hm:0, rateExact:c2r});
+    tail.push({rate:progRate(fr),  target:ft,  hh:0, hm:0, rateExact:fr});
+  }
+  let i = PROCESS_ROW + 1;
+  tail.forEach(s=>{ writeSeg(i, s); markBook(i, s); i++; });
+  for(; i<N_ROWS; i++){ clearSeg(i); clearBook(i); }   // clear any leftover rows
+  recalc();
 }
 
 /* ---------------- glass used (log) ---------------- */
@@ -783,7 +992,6 @@ function fillThicknessSelect(sel, defInch){
 function init(){
   // thickness dropdowns
   fillThicknessSelect($("m_thick"),1);
-  fillThicknessSelect($("a_thick"),1);
   // default start date = today
   const t=new Date();
   $("s_date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
@@ -797,17 +1005,18 @@ function init(){
   buildGlassRows();
   seedCanonical();   // set data-f from the Fahrenheit defaults
 
-  // m_start is a temperature -> route through onFieldInput so its data-f stays current
-  $("m_start").addEventListener("input", ()=>onFieldInput($("m_start")));
   // start-clock fields: no unit conversion
   ["s_date","s_hour","s_min","s_ampm","s_delay"].forEach(id=>$(id).addEventListener("input",recalc));
-  // keep the anneal panel brand/thickness in sync with the job selectors, but allow override
-  $("m_brand").addEventListener("change",()=>{ if($("m_brand").value!=="Other"){$("a_brand").value=$("m_brand").value; renderAnneal();} });
-  $("m_thick").addEventListener("change",()=>{ $("a_thick").value=$("m_thick").value; renderAnneal(); });
-  ["a_brand","a_thick"].forEach(id=>$(id).addEventListener("change",renderAnneal));
+  // check-config temps/rate are unit-aware
+  ["cfg_lid","cfg_vent","cfg_afap"].forEach(id=>$(id).addEventListener("input",()=>onFieldInput($(id))));
+  // Glass brand + annealing thickness (Job panel) drive the cooling tail.
+  $("m_brand").addEventListener("change",layoutTail);
+  $("m_thick").addEventListener("change",layoutTail);
+  // anti-sucker toggle re-lays the cooling tail
+  $("cfg_anti").addEventListener("change",layoutTail);
 
+  layoutTail();      // build the default cooling tail (anti-sucker on, Bullseye + thickness)
   recalc();
-  renderAnneal();
 }
 document.addEventListener("DOMContentLoaded",init);
 </script>
