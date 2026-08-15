@@ -417,9 +417,8 @@
 
   <!-- reference tables -->
   <div class="panel ref-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">06</span><h2>Reference tables</h2>
-      <span class="hint">screen only · these drive the recipe above</span></div>
-    <p class="ref-note">The generated schedule reads these two tables. Process <b>target temperatures</b> come from the temp table; <b>ramp rates, anneal soak, and cooling</b> come from the thickness table. The active glass and thickness for your current recipe are highlighted. Values are starting points; every glass and kiln is different, so test and keep records.</p>
+    <div class="phead"><span class="n">06</span><h2>Reference tables</h2></div>
+    <p class="ref-note">The generated schedule reads these two tables. The active glass and thickness for your current recipe are highlighted.</p>
     <div class="ref-grid">
       <div>
         <p class="ref-title">Process temperatures — °<span class="u-lbl">F</span></p>
@@ -1138,7 +1137,7 @@ function recalc(){
   }
 
   const total = cum;
-  $("r_total").innerHTML = rows.length ? `${fmtDur(total)} <small>· ${total.toFixed(2)}h</small>` : "—";
+  $("r_total").textContent = rows.length ? fmtDur(total) : "—";
   $("r_top").textContent = rows.length ? `${dispTemp(maxTarget)}°${UNIT}` : "—";
   if(base && rows.length){
     $("r_check").textContent = fmtClock(new Date(base.getTime()+maxAtCum*3600*1000));
@@ -1511,7 +1510,7 @@ function buildPdf(J, data){
     doc.text(`Name: ${data.artist||"—"}      Phone: ${data.phone||"—"}`, L, y); y+=14;
     doc.setFont("helvetica","normal");
   }
-  doc.text(`Kiln: ${data.kiln||"—"}      Program #: ${data.prog||"—"}      AFAP est. rate: ${data.afap||"—"} °${U}/hr`, L, y); y+=14;
+  doc.text(`Kiln: ${data.kiln||"—"}      Program #: ${data.prog||"—"}`, L, y); y+=14;
   doc.setFont("helvetica","bold");
   doc.text(`Glass: ${data.glass||"—"}      Process: ${data.process||"—"}      Thickness: ${data.thk||"—"} mm      Caution: ${data.caution||"—"}`, L, y); y+=14;
   doc.setFont("helvetica","normal");
