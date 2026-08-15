@@ -94,7 +94,6 @@
   .cols{display:grid;grid-template-columns:1fr;gap:22px}
   .cols > div{min-width:0}
   @media(min-width:1000px){.cols{grid-template-columns:minmax(0,1fr) 360px}}
-  @media(min-width:700px){.readouts{grid-template-columns:repeat(4,1fr)}}
 
   .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px;min-width:0}
   .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
@@ -262,7 +261,7 @@
     /* cap curve so job+recipe+start+segments+curve+totals all fit one page */
     .curve-box{height:1.85in;overflow:hidden}
     svg.curve{height:100%;width:100%}
-    .readouts{grid-template-columns:repeat(4,1fr)}
+    .readouts{grid-template-columns:repeat(2,1fr)}
     .phead h2{color:#000;font-size:11px}.phead .n{color:#555}
     input,select{background:#fff !important;border:none;color:#000;padding:1px 3px;font-size:10px}
     .field.recipe select,.field.recipe input{background:#fff !important;border:none}
@@ -371,9 +370,9 @@
     <div class="phead"><span class="n">03</span><h2>Totals</h2></div>
     <div class="readouts">
       <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
+      <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
       <div class="ro hot"><div class="k">Top temp</div><div class="v" id="r_top">—</div></div>
       <div class="ro"><div class="k">Check at top temp</div><div class="v" id="r_check">—</div></div>
-      <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
     </div>
   </div>
 
