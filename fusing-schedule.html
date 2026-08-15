@@ -94,6 +94,7 @@
   .cols{display:grid;grid-template-columns:1fr;gap:22px}
   .cols > div{min-width:0}
   @media(min-width:1000px){.cols{grid-template-columns:minmax(0,1fr) 360px}}
+  @media(min-width:700px){.readouts{grid-template-columns:repeat(4,1fr)}}
 
   .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px;min-width:0}
   .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
@@ -155,6 +156,7 @@
 
   /* ---- readout strip ---- */
   .readouts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hairline);
+    /* (4-across on wider screens set below) */
     border:1px solid var(--hairline);border-radius:4px;overflow:hidden;margin-top:2px}
   .ro{background:var(--raised);padding:12px 14px}
   .ro .k{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:5px}
@@ -364,58 +366,53 @@
     </div>
   </div>
 
-  <div class="cols">
-    <!-- LEFT: schedule + curve -->
-    <div>
-      <div class="panel" style="margin-bottom:22px">
-        <div class="phead"><span class="n">03</span><h2>Segments</h2></div>
-        <div class="sched-wrap">
-          <table class="sched">
-            <thead><tr>
-              <th class="l">Seg</th>
-              <th>Rate<span class="u">°<span class="u-lbl">F</span>/hr</span></th>
-              <th>Target<span class="u">°<span class="u-lbl">F</span></span></th>
-              <th>Hold<span class="u">hr</span></th>
-              <th>Hold<span class="u">min</span></th>
-              <th class="l">Stage</th>
-              <th>Ramp<span class="u">h:mm</span></th>
-              <th>Segment<span class="u">h:mm</span></th>
-              <th>Cumulative<span class="u">h:mm</span></th>
-              <th class="l">Segment Complete Time</th>
-            </tr></thead>
-            <tbody id="segbody"></tbody>
-          </table>
-        </div>
-        <div class="legend">
-          <span><span class="swatch book"></span>Recommended (from recipe)</span>
-          <span><span class="swatch mod"></span>Edited by you</span>
-          <span><span class="swatch inp"></span>Input cell</span>
-          <span><span class="swatch out"></span>Calculated</span>
-          <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
-          <span class="afap-rate">AFAP est. rate <input id="cfg_afap" data-k="rate" type="number" value="450" min="1"> °<span class="u-lbl">F</span>/hr</span>
-        </div>
-      </div>
-
-      <div class="panel curve-panel">
-        <div class="phead"><span class="n">04</span><h2>Firing curve</h2>
-          <span class="hint">temperature over cumulative time</span></div>
-        <div class="curve-box"><svg class="curve" id="curve" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet"></svg></div>
-        <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
-      </div>
+  <!-- totals (above segments) -->
+  <div class="panel" style="margin-bottom:22px">
+    <div class="phead"><span class="n">03</span><h2>Totals</h2></div>
+    <div class="readouts">
+      <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
+      <div class="ro hot"><div class="k">Top temp</div><div class="v" id="r_top">—</div></div>
+      <div class="ro"><div class="k">Check at top temp</div><div class="v" id="r_check">—</div></div>
+      <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
     </div>
+  </div>
 
-    <!-- RIGHT: totals -->
-    <div>
-      <div class="panel">
-        <div class="phead"><span class="n">05</span><h2>Totals</h2></div>
-        <div class="readouts">
-          <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
-          <div class="ro hot"><div class="k">Top temp</div><div class="v" id="r_top">—</div></div>
-          <div class="ro"><div class="k">Check at top temp</div><div class="v" id="r_check">—</div></div>
-          <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
-        </div>
-      </div>
+  <!-- segments -->
+  <div class="panel" style="margin-bottom:22px">
+    <div class="phead"><span class="n">04</span><h2>Segments</h2></div>
+    <div class="sched-wrap">
+      <table class="sched">
+        <thead><tr>
+          <th class="l">Seg</th>
+          <th>Rate<span class="u">°<span class="u-lbl">F</span>/hr</span></th>
+          <th>Target<span class="u">°<span class="u-lbl">F</span></span></th>
+          <th>Hold<span class="u">hr</span></th>
+          <th>Hold<span class="u">min</span></th>
+          <th class="l">Stage</th>
+          <th>Ramp<span class="u">h:mm</span></th>
+          <th>Segment<span class="u">h:mm</span></th>
+          <th>Cumulative<span class="u">h:mm</span></th>
+          <th class="l">Segment Complete Time</th>
+        </tr></thead>
+        <tbody id="segbody"></tbody>
+      </table>
     </div>
+    <div class="legend">
+      <span><span class="swatch book"></span>Recommended (from recipe)</span>
+      <span><span class="swatch mod"></span>Edited by you</span>
+      <span><span class="swatch inp"></span>Input cell</span>
+      <span><span class="swatch out"></span>Calculated</span>
+      <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+      <span class="afap-rate">AFAP est. rate <input id="cfg_afap" data-k="rate" type="number" value="450" min="1"> °<span class="u-lbl">F</span>/hr</span>
+    </div>
+  </div>
+
+  <!-- curve -->
+  <div class="panel curve-panel">
+    <div class="phead"><span class="n">05</span><h2>Firing curve</h2>
+      <span class="hint">temperature over cumulative time</span></div>
+    <div class="curve-box"><svg class="curve" id="curve" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
   </div>
 
   <!-- reference tables -->
