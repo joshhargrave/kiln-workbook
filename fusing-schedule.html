@@ -186,7 +186,7 @@
   td.clock .cell{color:var(--ink)}
   .afap-tag{color:var(--h-orange)}
   .seg-warn{color:#ff8f8f;font-size:12px;margin:8px 0 0;line-height:1.4;display:none}
-  .seg-tools{display:flex;justify-content:flex-end;margin-top:8px}
+  .seg-tools{display:flex;justify-content:flex-start;margin-top:8px}
   .reset-btn{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-dim);background:transparent;border:1px solid var(--hairline-bright);border-radius:3px;padding:4px 9px;cursor:pointer}
   .reset-btn:hover{border-color:var(--amber);color:var(--amber)}
   @media print{.seg-tools{display:none !important} .seg-warn{display:none !important}}
@@ -374,20 +374,14 @@
     </div>
   </div>
 
-  <!-- totals (above segments) -->
-  <div class="panel" style="margin-bottom:22px">
-    <div class="phead"><span class="n">03</span><h2>Totals</h2></div>
-    <div class="readouts">
-      <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
-      <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
-      <div class="ro hot"><div class="k">Top temp</div><div class="v" id="r_top">—</div></div>
-      <div class="ro"><div class="k">Check at top temp</div><div class="v" id="r_check">—</div></div>
-    </div>
-  </div>
-
   <!-- segments -->
   <div class="panel" style="margin-bottom:22px">
-    <div class="phead"><span class="n">04</span><h2>Segments</h2></div>
+    <div class="phead"><span class="n">03</span><h2>Segments</h2></div>
+    <div class="readouts" style="margin-bottom:14px">
+      <div class="ro"><div class="k">Total time</div><div class="v" id="r_total">—</div></div>
+      <div class="ro"><div class="k">Estimated end</div><div class="v" id="r_end">—</div></div>
+    </div>
+    <span id="r_top" hidden></span><span id="r_check" hidden></span>
     <div class="sched-wrap">
       <table class="sched">
         <thead><tr>
@@ -410,7 +404,7 @@
       <span><span class="swatch mod"></span>Edited by you</span>
       <span><span class="swatch inp"></span>Input cell</span>
       <span><span class="swatch out"></span>Calculated</span>
-      <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+      <span><span class="afap-tag">AFAP</span> = as fast as possible; enter <b style="color:var(--ink-dim)">9999</b></span>
       <span class="afap-rate">AFAP est. rate <input id="cfg_afap" data-k="rate" type="number" value="450" min="1" aria-label="AFAP estimate rate (degrees per hour)"> °<span class="u-lbl">F</span>/hr</span>
     </div>
     <div class="seg-tools"><button type="button" class="reset-btn" onclick="resetToRecommended()">↺ Reset edits to recommended</button></div>
@@ -419,7 +413,7 @@
 
   <!-- curve -->
   <div class="panel curve-panel">
-    <div class="phead"><span class="n">05</span><h2>Firing curve</h2>
+    <div class="phead"><span class="n">04</span><h2>Firing curve</h2>
       <span class="hint">temperature over cumulative time</span></div>
     <div class="curve-box"><svg class="curve" id="curve" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet"></svg></div>
     <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
@@ -427,7 +421,7 @@
 
   <!-- reference tables -->
   <div class="panel ref-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">06</span><h2>Reference tables</h2></div>
+    <div class="phead"><span class="n">05</span><h2>Reference tables</h2></div>
     <p class="ref-note">The generated schedule reads these two tables. The active glass and thickness for your current recipe are highlighted.</p>
     <div class="ref-grid">
       <div>
@@ -442,7 +436,7 @@
   </div>
 
   <div class="panel log-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">07</span><h2>Firing record</h2>
+    <div class="phead"><span class="n">06</span><h2>Firing record</h2>
       <span class="hint">your notes, included in the printed PDF</span></div>
     <div class="field"><label for="lg_desc">Description / sketch</label>
       <textarea id="lg_desc" rows="3" placeholder=""></textarea></div>
@@ -1032,13 +1026,13 @@ function buildRecipe(){
     segs.push({stage, rate:String(K.squeeze), target:String(pTemp), ...holdParts(holdMin)});
   } else {
     segs.push({stage:"Bubble squeeze", rate:String(K.squeeze), target:String(T.squeeze), ...holdParts(30)});
-    segs.push({stage:process, rate:"AFAP", target:String(pTemp), ...holdParts(10)});
+    segs.push({stage:process, rate:"9999", target:String(pTemp), ...holdParts(10)});
   }
 
-  segs.push({stage:"Rapid cool to anneal", rate:"AFAP", target:String(anneal), ...holdParts(K.soak)});
+  segs.push({stage:"Rapid cool to anneal", rate:"9999", target:String(anneal), ...holdParts(K.soak)});
   segs.push({stage:"Anneal cool 1", rate:String(K.cool1), target:String(anneal-100), ...holdParts(0)});
   segs.push({stage:"Anneal cool 2", rate:String(K.cool2), target:String(anneal-200), ...holdParts(0)});
-  segs.push({stage:"Final cool", rate:(K.final==="AFAP"?"AFAP":String(K.final)), target:"200", ...holdParts(0)});
+  segs.push({stage:"Final cool", rate:(K.final==="AFAP"?"9999":String(K.final)), target:"200", ...holdParts(0)});
   return segs;
 }
 
@@ -1071,10 +1065,10 @@ function buildRows(){
     const tr = document.createElement("tr");
     tr.innerHTML =
       `<td class="seg">${i+1}</td>
-       <td class="inp"><input data-k="rate"   data-i="${i}" type="text" value="" placeholder="—"></td>
-       <td class="inp"><input data-k="target" data-i="${i}" type="text" value="" placeholder="—"></td>
-       <td class="inp"><input data-k="hh"     data-i="${i}" type="text" value="" placeholder="0"></td>
-       <td class="inp"><input data-k="hm"     data-i="${i}" type="text" value="" placeholder="0"></td>
+       <td class="inp"><input data-k="rate"   data-i="${i}" type="text" inputmode="decimal" value="" placeholder="—"></td>
+       <td class="inp"><input data-k="target" data-i="${i}" type="text" inputmode="decimal" value="" placeholder="—"></td>
+       <td class="inp"><input data-k="hh"     data-i="${i}" type="text" inputmode="decimal" value="" placeholder="0"></td>
+       <td class="inp"><input data-k="hm"     data-i="${i}" type="text" inputmode="decimal" value="" placeholder="0"></td>
        <td class="inp stage"><input data-k="stage"  data-i="${i}" type="text" value="" placeholder="—"></td>
        <td class="calc ramp"><span class="cell"></span></td>
        <td class="calc segt"><span class="cell"></span></td>
@@ -1264,7 +1258,8 @@ function drawCurve(startTemp, maxTarget, total){
     const yBase = Y(0).toFixed(1);
     for(let li=1; li<pts.length; li++){ const A=pts[li-1], B=pts[li];
       const x1=X(A[0]).toFixed(1), y1=Y(A[1]).toFixed(1), x2=X(B[0]).toFixed(1), y2=Y(B[1]).toFixed(1);
-      area += `<polygon points="${x1},${y1} ${x2},${y2} ${x2},${yBase} ${x1},${yBase}" fill="${segCol(B[2])}" fill-opacity="0.17" stroke="none"/>`;
+      area += `<polygon points="${x1},${y1} ${x2},${y2} ${x2},${yBase} ${x1},${yBase}" fill="${segCol(B[2])}" fill-opacity="0.3" stroke="none"/>`;
+      if(A[2]>=0 && A[2]!==B[2]) area += `<line x1="${x1}" y1="${yBase}" x2="${x1}" y2="${y1}" stroke="var(--void)" stroke-width="1.4"/>`;
       line += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${segCol(B[2])}" stroke-width="2.4" stroke-linecap="round"/>`;
     }
     line += pts.filter((p,idx)=>idx>0).map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.2" fill="var(--void)" stroke="${segCol(p[2])}" stroke-width="1.4"/>`).join("");

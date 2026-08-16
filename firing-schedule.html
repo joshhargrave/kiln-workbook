@@ -174,7 +174,7 @@
   td.clock .cell{color:var(--ink)}
   .afap-tag{color:var(--h-orange)}
   .seg-warn{color:#ff8f8f;font-size:12px;margin:8px 0 0;line-height:1.4;display:none}
-  .seg-tools{display:flex;justify-content:flex-end;margin-top:8px}
+  .seg-tools{display:flex;justify-content:flex-start;margin-top:8px}
   .reset-btn{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-dim);background:transparent;border:1px solid var(--hairline-bright);border-radius:3px;padding:4px 9px;cursor:pointer}
   .reset-btn:hover{border-color:var(--amber);color:var(--amber)}
   @media print{.seg-tools{display:none !important} .seg-warn{display:none !important}}
@@ -439,7 +439,7 @@
       <span><span class="swatch out"></span>Calculated</span>
       <span><span class="swatch book"></span>Recommended anneal (auto)</span>
       <span><span class="swatch mod"></span>Edited by you</span>
-      <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
+      <span><span class="afap-tag">AFAP</span> = as fast as possible; enter <b style="color:var(--ink-dim)">9999</b></span>
     </div>
     <div class="seg-tools"><button type="button" class="reset-btn" onclick="resetToRecommended()">↺ Reset edits to recommended</button></div>
     <div id="seg-warn" class="seg-warn" role="alert"></div>
@@ -1059,10 +1059,10 @@ function buildRows(){
     const tr = document.createElement("tr");
     tr.innerHTML =
       `<td class="seg">${i+1}</td>
-       <td class="inp"><input data-k="rate"   data-i="${i}" type="text" value="${d.rate}"   placeholder="—"></td>
-       <td class="inp"><input data-k="target" data-i="${i}" type="text" value="${d.target}" placeholder="—"></td>
-       <td class="inp"><input data-k="hh"     data-i="${i}" type="text" value="${d.hh}"     placeholder="0"></td>
-       <td class="inp"><input data-k="hm"     data-i="${i}" type="text" value="${d.hm}"     placeholder="0"></td>
+       <td class="inp"><input data-k="rate"   data-i="${i}" type="text" inputmode="decimal" value="${d.rate}"   placeholder="—"></td>
+       <td class="inp"><input data-k="target" data-i="${i}" type="text" inputmode="decimal" value="${d.target}" placeholder="—"></td>
+       <td class="inp"><input data-k="hh"     data-i="${i}" type="text" inputmode="decimal" value="${d.hh}"     placeholder="0"></td>
+       <td class="inp"><input data-k="hm"     data-i="${i}" type="text" inputmode="decimal" value="${d.hm}"     placeholder="0"></td>
        <td class="calc ramp"><span class="cell"></span></td>
        <td class="calc segt"><span class="cell"></span></td>
        <td class="calc cum"><span class="cell"></span></td>
@@ -1273,7 +1273,8 @@ function drawCurve(startTemp, maxTarget, total){
     const yBase = Y(0).toFixed(1);
     for(let li=1; li<pts.length; li++){ const A=pts[li-1], B=pts[li];
       const x1=X(A[0]).toFixed(1), y1=Y(A[1]).toFixed(1), x2=X(B[0]).toFixed(1), y2=Y(B[1]).toFixed(1);
-      area += `<polygon points="${x1},${y1} ${x2},${y2} ${x2},${yBase} ${x1},${yBase}" fill="${segCol(B[2])}" fill-opacity="0.17" stroke="none"/>`;
+      area += `<polygon points="${x1},${y1} ${x2},${y2} ${x2},${yBase} ${x1},${yBase}" fill="${segCol(B[2])}" fill-opacity="0.3" stroke="none"/>`;
+      if(A[2]>=0 && A[2]!==B[2]) area += `<line x1="${x1}" y1="${yBase}" x2="${x1}" y2="${y1}" stroke="var(--void)" stroke-width="1.4"/>`;
       line += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${segCol(B[2])}" stroke-width="2.4" stroke-linecap="round"/>`;
     }
     // segment target dots
