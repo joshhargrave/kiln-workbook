@@ -173,6 +173,11 @@
   table.sched td.dim .cell{color:var(--ink-faint)}
   td.clock .cell{color:var(--ink)}
   .afap-tag{color:var(--h-orange)}
+  .seg-warn{color:#ff8f8f;font-size:12px;margin:8px 0 0;line-height:1.4;display:none}
+  .seg-tools{display:flex;justify-content:flex-end;margin-top:8px}
+  .reset-btn{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-dim);background:transparent;border:1px solid var(--hairline-bright);border-radius:3px;padding:4px 9px;cursor:pointer}
+  .reset-btn:hover{border-color:var(--amber);color:var(--amber)}
+  @media print{.seg-tools{display:none !important} .seg-warn{display:none !important}}
 
   .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:11.5px;color:var(--ink-dim)}
   .legend .swatch{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px;border:1px solid var(--hairline-bright)}
@@ -347,18 +352,18 @@
     <div class="phead"><span class="n">00</span><h2>Job</h2></div>
     <div class="job-rows">
       <div class="meta-grid c2">
-        <div class="field"><label>Name</label><input id="m_artist" type="text" placeholder="—"></div>
-        <div class="field"><label>Phone</label><input id="m_phone" type="tel" placeholder="—"></div>
+        <div class="field"><label for="m_artist">Name</label><input id="m_artist" type="text" placeholder="—"></div>
+        <div class="field"><label for="m_phone">Phone</label><input id="m_phone" type="tel" placeholder="—"></div>
       </div>
       <div class="meta-grid c3">
-        <div class="field"><label>Project name</label><input id="m_name" type="text" placeholder="Project 1" value="Project 1"></div>
-        <div class="field"><label>Kiln #</label><input id="m_kiln" type="text" placeholder="—"></div>
-        <div class="field"><label>User program #</label><input id="m_prog" type="text" placeholder="—"></div>
+        <div class="field"><label for="m_name">Project name</label><input id="m_name" type="text" placeholder="Project 1" value="Project 1"></div>
+        <div class="field"><label for="m_kiln">Kiln #</label><input id="m_kiln" type="text" placeholder="—"></div>
+        <div class="field"><label for="m_prog">User program #</label><input id="m_prog" type="text" placeholder="—"></div>
       </div>
       <div class="meta-grid c2">
-        <div class="field"><label>Glass brand</label>
+        <div class="field"><label for="m_brand">Glass brand</label>
           <select id="m_brand"><option>Bullseye</option><option>Gaffer</option><option>Other</option></select></div>
-        <div class="field"><label>Annealing thickness</label><select id="m_thick"></select></div>
+        <div class="field"><label for="m_thick">Annealing thickness</label><select id="m_thick"></select></div>
       </div>
     </div>
   </div>
@@ -368,11 +373,11 @@
     <div class="phead"><span class="n">01</span><h2>Start time</h2>
       <span class="hint">clock times below are figured from this</span></div>
     <div class="start-row">
-      <div class="field"><label>Start date</label><input id="s_date" type="date"></div>
-      <div class="field"><label>Hour (1–12)</label><input id="s_hour" type="number" min="1" max="12" value="8"></div>
-      <div class="field"><label>Minute</label><input id="s_min" type="number" min="0" max="59" value="0"></div>
-      <div class="field"><label>AM / PM</label><select id="s_ampm"><option>AM</option><option selected>PM</option></select></div>
-      <div class="field"><label>Delay (hrs)</label><input id="s_delay" type="number" min="0" step="0.5" value="0"></div>
+      <div class="field"><label for="s_date">Start date</label><input id="s_date" type="date"></div>
+      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="number" min="1" max="12" value="8"></div>
+      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="number" min="0" max="59" value="0"></div>
+      <div class="field"><label for="s_ampm">AM / PM</label><select id="s_ampm"><option>AM</option><option selected>PM</option></select></div>
+      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="number" min="0" step="0.5" value="0"></div>
     </div>
   </div>
 
@@ -404,10 +409,10 @@
     </div>
 
     <div class="check-cfg2">
-      <div class="field field-check"><label>Anti-sucker step</label>
+      <div class="field field-check"><label for="cfg_afap">Anti-sucker step</label>
         <label class="chk-toggle"><input id="cfg_anti" type="checkbox" checked><span>Hold at 1250°F on cool</span></label></div>
-      <div class="field"><label>AFAP est. rate °<span class="u-lbl">F</span>/hr</label>
-        <input id="cfg_afap" data-k="rate" type="number" value="450" min="1"></div>
+      <div class="field"><label for="cfg_afap">AFAP est. rate °<span class="u-lbl">F</span>/hr</label>
+        <input id="cfg_afap" data-k="rate" type="number" value="450" min="1" aria-label="AFAP estimate rate (degrees per hour)"></div>
     </div>
   </div>
 
@@ -436,6 +441,8 @@
       <span><span class="swatch mod"></span>Edited by you</span>
       <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
     </div>
+    <div class="seg-tools"><button type="button" class="reset-btn" onclick="resetToRecommended()">\u21ba Reset edits to recommended</button></div>
+    <div id="seg-warn" class="seg-warn" role="alert"></div>
   </div>
 
   <div class="panel curve-panel">
@@ -448,7 +455,7 @@
   <div class="panel log-panel" style="margin-top:22px">
     <div class="phead"><span class="n">05</span><h2>Firing record</h2>
       <span class="hint">your notes, included in the printed PDF</span></div>
-    <div class="field"><label>Description / sketch / dimensions</label>
+    <div class="field"><label for="lg_desc">Description / sketch / dimensions</label>
       <textarea id="lg_desc" rows="3" placeholder=""></textarea></div>
 
     <div class="log-sub">Glass used</div>
@@ -463,7 +470,7 @@
       </tr></tfoot>
     </table>
 
-    <div class="field"><label>Notes on results: success / failure / ideas for next time</label>
+    <div class="field"><label for="lg_notes">Notes on results: success / failure / ideas for next time</label>
       <textarea id="lg_notes" rows="3" placeholder=""></textarea></div>
   </div>
 
@@ -1200,7 +1207,7 @@ function drawCurve(startTemp, maxTarget, total){
 
   // rebuild the point list from canonical Fahrenheit values (times match the table);
   // temps are labelled in the display unit further below
-  const pts = [[0, startTemp]];
+  const pts = [[0, startTemp, -1]];
   let prevTemp = startTemp, cum = 0, chainBroken=false;
   for(let i=0;i<N_ROWS;i++){
     const rateRaw=(document.querySelector(`input[data-k="rate"][data-i="${i}"]`).dataset.f||"").trim();
@@ -1211,9 +1218,9 @@ function drawCurve(startTemp, maxTarget, total){
     const hh=parseFloat(document.querySelector(`input[data-k="hh"][data-i="${i}"]`).value)||0;
     const hm=parseFloat(document.querySelector(`input[data-k="hm"][data-i="${i}"]`).value)||0;
     const rh=rampHours(rateRaw,target,prevTemp);
-    cum+=rh; pts.push([cum,target]);          // end of ramp
+    cum+=rh; pts.push([cum,target,i]);          // end of ramp
     const hold=hh+hm/60;
-    if(hold>0){ cum+=hold; pts.push([cum,target]); } // end of hold (flat)
+    if(hold>0){ cum+=hold; pts.push([cum,target,i]); } // end of hold (flat)
     prevTemp=target;
   }
 
@@ -1268,11 +1275,13 @@ function drawCurve(startTemp, maxTarget, total){
   let line="", area="";
   if(pts.length>1){
     const d = pts.map((p,idx)=>`${idx?"L":"M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(" ");
-    line = `<path d="${d}" fill="none" stroke="url(#heat)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const segCol = s => `hsl(${(18+(s>=0?s:0)*30)%360},58%,62%)`;
+    for(let li=1; li<pts.length; li++){ const A=pts[li-1], B=pts[li];
+      line += `<line x1="${X(A[0]).toFixed(1)}" y1="${Y(A[1]).toFixed(1)}" x2="${X(B[0]).toFixed(1)}" y2="${Y(B[1]).toFixed(1)}" stroke="${segCol(B[2])}" stroke-width="2.4" stroke-linecap="round"/>`; }
     const af = d + ` L${X(pts[pts.length-1][0]).toFixed(1)} ${Y(0).toFixed(1)} L${X(0).toFixed(1)} ${Y(0).toFixed(1)} Z`;
     area = `<path d="${af}" fill="url(#heatfill)" stroke="none"/>`;
     // segment target dots
-    line += pts.filter((p,idx)=>idx>0).map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.2" fill="var(--void)" stroke="url(#heat)" stroke-width="1.4"/>`).join("");
+    line += pts.filter((p,idx)=>idx>0).map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.2" fill="var(--void)" stroke="${segCol(p[2])}" stroke-width="1.4"/>`).join("");
   }
 
   const yLabel = `<text x="14" y="${padT+plotH/2}" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="10" fill="var(--ink-faint)" transform="rotate(-90 14 ${padT+plotH/2})" letter-spacing="1">°${UNIT}</text>`;
@@ -1366,6 +1375,27 @@ function paintBookCells(){
       el.classList.toggle("mod", !same);
     });
   }
+  const warns=[];
+  for(let i=0;i<N_ROWS;i++){
+    const el=segInput("target",i); if(!el) continue;
+    const f=parseFloat(el.dataset.f);
+    if(!isNaN(f) && (f<50 || f>1700)) warns.push(`Seg ${i+1} (${dispTemp(f)})`);
+  }
+  const w=$("seg-warn");
+  if(w){ if(warns.length){ w.textContent="\u26a0 Target looks off \u2014 check for a typo: "+warns.join(", "); w.style.display="block"; } else { w.textContent=""; w.style.display="none"; } }
+}
+
+function resetToRecommended(){
+  for(let i=0;i<N_ROWS;i++){
+    ["rate","target","hh","hm"].forEach(k=>{
+      const el=segInput(k,i);
+      if(!el || el.dataset.base===undefined) return;
+      const base=el.dataset.base;
+      if(k==="rate"||k==="target"){ el.dataset.f=base; el.value=fromF(base, k==="rate"?"rate":"temp"); }
+      else el.value=base;
+    });
+  }
+  recalc();
 }
 function clearSeg(i){
   ["rate","target","hh","hm"].forEach(k=>{ const el=segInput(k,i); el.value=""; if(k==="rate"||k==="target") el.dataset.f=""; });
@@ -1501,7 +1531,7 @@ function snapBaseName(){
   let mm,dd,yyyy;
   if(/^\d{4}-\d{2}-\d{2}$/.test(dv)){ [yyyy,mm,dd]=dv.split("-"); }
   else { const t=new Date(); yyyy=String(t.getFullYear()); mm=String(t.getMonth()+1).padStart(2,"0"); dd=String(t.getDate()).padStart(2,"0"); }
-  const date=`${mm}-${dd}-${yyyy}`;
+  const date=`${yyyy}-${mm}-${dd}`;
   let proj=($("m_name").value||"").toLowerCase().trim()
     .replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
   if(!proj) proj="schedule";
