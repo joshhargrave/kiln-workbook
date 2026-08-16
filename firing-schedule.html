@@ -441,7 +441,7 @@
       <span><span class="swatch mod"></span>Edited by you</span>
       <span><span class="afap-tag">AFAP</span> = as fast as possible; type <b style="color:var(--ink-dim)">AFAP</b> or <b style="color:var(--ink-dim)">9999</b></span>
     </div>
-    <div class="seg-tools"><button type="button" class="reset-btn" onclick="resetToRecommended()">\u21ba Reset edits to recommended</button></div>
+    <div class="seg-tools"><button type="button" class="reset-btn" onclick="resetToRecommended()">↺ Reset edits to recommended</button></div>
     <div id="seg-warn" class="seg-warn" role="alert"></div>
   </div>
 
@@ -1237,11 +1237,6 @@ function drawCurve(startTemp, maxTarget, total){
       <stop offset="0.66" stop-color="var(--h-orange)"/>
       <stop offset="0.85" stop-color="var(--h-amber)"/>
       <stop offset="1"    stop-color="var(--h-yellow)"/>
-    </linearGradient>
-    <linearGradient id="heatfill" x1="0" y1="${padT+plotH}" x2="0" y2="${padT}" gradientUnits="userSpaceOnUse">
-      <stop offset="0"    stop-color="var(--h-cold)"  stop-opacity="0.02"/>
-      <stop offset="0.66" stop-color="var(--h-orange)" stop-opacity="0.10"/>
-      <stop offset="1"    stop-color="var(--h-yellow)" stop-opacity="0.20"/>
     </linearGradient>`;
 
   // gridlines
@@ -1274,12 +1269,13 @@ function drawCurve(startTemp, maxTarget, total){
   // path
   let line="", area="";
   if(pts.length>1){
-    const d = pts.map((p,idx)=>`${idx?"L":"M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(" ");
     const segCol = s => `hsl(${(18+(s>=0?s:0)*30)%360},58%,62%)`;
+    const yBase = Y(0).toFixed(1);
     for(let li=1; li<pts.length; li++){ const A=pts[li-1], B=pts[li];
-      line += `<line x1="${X(A[0]).toFixed(1)}" y1="${Y(A[1]).toFixed(1)}" x2="${X(B[0]).toFixed(1)}" y2="${Y(B[1]).toFixed(1)}" stroke="${segCol(B[2])}" stroke-width="2.4" stroke-linecap="round"/>`; }
-    const af = d + ` L${X(pts[pts.length-1][0]).toFixed(1)} ${Y(0).toFixed(1)} L${X(0).toFixed(1)} ${Y(0).toFixed(1)} Z`;
-    area = `<path d="${af}" fill="url(#heatfill)" stroke="none"/>`;
+      const x1=X(A[0]).toFixed(1), y1=Y(A[1]).toFixed(1), x2=X(B[0]).toFixed(1), y2=Y(B[1]).toFixed(1);
+      area += `<polygon points="${x1},${y1} ${x2},${y2} ${x2},${yBase} ${x1},${yBase}" fill="${segCol(B[2])}" fill-opacity="0.17" stroke="none"/>`;
+      line += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${segCol(B[2])}" stroke-width="2.4" stroke-linecap="round"/>`;
+    }
     // segment target dots
     line += pts.filter((p,idx)=>idx>0).map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.2" fill="var(--void)" stroke="${segCol(p[2])}" stroke-width="1.4"/>`).join("");
   }
