@@ -374,10 +374,10 @@
       <span class="hint">clock times below are figured from this</span></div>
     <div class="start-row">
       <div class="field"><label for="s_date">Start date</label><input id="s_date" type="date"></div>
-      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="number" min="1" max="12" value="8"></div>
-      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="number" min="0" max="59" value="0"></div>
+      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="number" inputmode="numeric" min="1" max="12" value="8"></div>
+      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="number" inputmode="numeric" min="0" max="59" value="0"></div>
       <div class="field"><label for="s_ampm">AM / PM</label><select id="s_ampm"><option>AM</option><option selected>PM</option></select></div>
-      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="number" min="0" step="0.5" value="0"></div>
+      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="number" inputmode="decimal" min="0" step="0.5" value="0"></div>
     </div>
   </div>
 
@@ -1429,7 +1429,7 @@ function buildGlassRows(){
       `<td><input type="text" data-g="brand" placeholder="—"></td>
        <td><input type="text" data-g="code" placeholder="—"></td>
        <td><input type="text" data-g="form" placeholder="—"></td>
-       <td class="r"><input class="gw" type="number" min="0" step="any" placeholder="0"></td>`;
+       <td class="r"><input class="gw" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></td>`;
     tb.appendChild(tr);
   }
   tb.querySelectorAll("input.gw").forEach(inp=>inp.addEventListener("input",sumGlass));

@@ -367,10 +367,10 @@
       <span class="hint">clock times below are figured from this</span></div>
     <div class="start-row">
       <div class="field"><label for="s_date">Start date</label><input id="s_date" type="date"></div>
-      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="number" min="1" max="12" value="9"></div>
-      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="number" min="0" max="59" value="0"></div>
+      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="number" inputmode="numeric" min="1" max="12" value="9"></div>
+      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="number" inputmode="numeric" min="0" max="59" value="0"></div>
       <div class="field"><label for="s_ampm">AM / PM</label><select id="s_ampm"><option selected>AM</option><option>PM</option></select></div>
-      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="number" min="0" step="0.5" value="0"></div>
+      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="number" inputmode="decimal" min="0" step="0.5" value="0"></div>
     </div>
   </div>
 
@@ -419,24 +419,8 @@
     <div class="curve-axis-note"><span>0 h</span><span id="curve-xmax">— h</span></div>
   </div>
 
-  <!-- reference tables -->
-  <div class="panel ref-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">05</span><h2>Reference tables</h2></div>
-    <p class="ref-note">The generated schedule reads these two tables. The active glass and thickness for your current recipe are highlighted.</p>
-    <div class="ref-grid">
-      <div>
-        <p class="ref-title">Process temperatures — °<span class="u-lbl">F</span></p>
-        <div class="ref-scroll"><table class="ref" id="ref_temp"></table></div>
-      </div>
-      <div>
-        <p class="ref-title">Rates &amp; anneal by thickness</p>
-        <div class="ref-scroll"><table class="ref" id="ref_thk"></table></div>
-      </div>
-    </div>
-  </div>
-
   <div class="panel log-panel" style="margin-top:22px">
-    <div class="phead"><span class="n">06</span><h2>Firing record</h2>
+    <div class="phead"><span class="n">05</span><h2>Firing record</h2>
       <span class="hint">your notes, included in the printed PDF</span></div>
     <div class="field"><label for="lg_desc">Description / sketch</label>
       <textarea id="lg_desc" rows="3" placeholder=""></textarea></div>
@@ -455,6 +439,22 @@
 
     <div class="field"><label for="lg_notes">Notes on results: success / devit / cracking / flashing / ideas for next time</label>
       <textarea id="lg_notes" rows="3" placeholder=""></textarea></div>
+  </div>
+
+  <!-- reference tables -->
+  <div class="panel ref-panel" style="margin-top:22px">
+    <div class="phead"><span class="n">06</span><h2>Reference tables</h2></div>
+    <p class="ref-note">The generated schedule reads these two tables. The active glass and thickness for your current recipe are highlighted.</p>
+    <div class="ref-grid">
+      <div>
+        <p class="ref-title">Process temperatures — °<span class="u-lbl">F</span></p>
+        <div class="ref-scroll"><table class="ref" id="ref_temp"></table></div>
+      </div>
+      <div>
+        <p class="ref-title">Rates &amp; anneal by thickness</p>
+        <div class="ref-scroll"><table class="ref" id="ref_thk"></table></div>
+      </div>
+    </div>
   </div>
 
   <footer>
@@ -1329,7 +1329,7 @@ function buildGlassRows(){
       `<td><input type="text" data-g="brand" placeholder="—"></td>
        <td><input type="text" data-g="code" placeholder="—"></td>
        <td><input type="text" data-g="form" placeholder="—"></td>
-       <td class="r"><input class="gw" type="number" min="0" step="any" placeholder="0"></td>`;
+       <td class="r"><input class="gw" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></td>`;
     tb.appendChild(tr);
   }
   tb.querySelectorAll("input.gw").forEach(inp=>inp.addEventListener("input",sumGlass));
