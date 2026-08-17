@@ -141,6 +141,8 @@
   table.glass td{padding:0;border-bottom:1px solid var(--hairline)}
   table.glass td input{border:none;border-radius:0;background:var(--amber-fill);padding:6px 8px;font-size:13px;box-shadow:none}
   table.glass td input:focus{background:rgba(255,176,64,0.16);box-shadow:inset 0 0 0 1px var(--amber-line)}
+  table.glass td select{border:none;border-radius:0;background-color:var(--amber-fill);padding:6px 26px 6px 8px;font-size:13px;box-shadow:none}
+  table.glass td select:focus{background-color:rgba(255,176,64,0.16);box-shadow:inset 0 0 0 1px var(--amber-line)}
   table.glass td input.gw{text-align:right}
   table.glass tr.total td{border-bottom:none;padding-top:8px;font-weight:500}
   table.glass tr.total .lbl{font-family:"Space Grotesk",sans-serif;font-size:11.5px;color:var(--ink-dim);text-align:right;padding-right:8px}
@@ -297,7 +299,7 @@
     table.glass{font-size:10px}
     table.glass th{color:#000;border-color:#000;padding:0 5px 6px}
     table.glass td{border-color:#bbb}
-    table.glass td input{background:#fff !important;padding:11px 5px;color:#000}
+    table.glass td input,table.glass td select{background:#fff !important;padding:11px 5px;color:#000}
     table.glass tr.total .lbl,table.glass tr.total .val{color:#000;padding-top:12px}
   }
 </style>
@@ -1328,7 +1330,7 @@ function buildGlassRows(){
     tr.innerHTML =
       `<td><input type="text" data-g="brand" placeholder="—"></td>
        <td><input type="text" data-g="code" placeholder="—"></td>
-       <td><input type="text" data-g="form" placeholder="—"></td>
+       <td><select data-g="form"><option value="" selected>—</option><option>Billet</option><option>Cullet</option><option>Frit</option><option>Powder</option><option>Sheet</option><option>Other</option></select></td>
        <td class="r"><input class="gw" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></td>`;
     tb.appendChild(tr);
   }
@@ -1367,7 +1369,7 @@ function captureState(){
   }
   document.querySelectorAll("#glassbody tr").forEach(tr=>{
     const g={};
-    tr.querySelectorAll("input").forEach(inp=>{ g[inp.dataset.g||"wt"]=inp.value; });
+    tr.querySelectorAll("input,select").forEach(inp=>{ g[inp.dataset.g||"wt"]=inp.value; });
     st.glass.push(g);
   });
   return st;
@@ -1400,7 +1402,7 @@ function applyState(st){
   const grows=document.querySelectorAll("#glassbody tr");
   (st.glass||[]).forEach((g,i)=>{
     const tr=grows[i]; if(!tr) return;
-    tr.querySelectorAll("input").forEach(inp=>{
+    tr.querySelectorAll("input,select").forEach(inp=>{
       const key=inp.dataset.g||"wt";
       if(g[key]!=null) inp.value=g[key];
     });
@@ -1486,7 +1488,7 @@ function pdfData(){
   });
   const glass_rows=[];
   document.querySelectorAll("#glassbody tr").forEach(tr=>{
-    const ins=tr.querySelectorAll("input");
+    const ins=tr.querySelectorAll("input,select");
     const r=[ins[0]?ins[0].value:"",ins[1]?ins[1].value:"",ins[2]?ins[2].value:"",ins[3]?ins[3].value:""];
     if(r[0]||r[1]||r[2]||r[3]) glass_rows.push(r);
   });
