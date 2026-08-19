@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Kiln Workbook">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Investment Calculator (hand-built layers)</title>
+<title>Investment Calculator (poured mold)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -59,7 +59,6 @@
   .title-block .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.22em;
     text-transform:uppercase;color:var(--amber);margin:0 0 6px}
   .title-block .sub{color:var(--ink-dim);font-size:13.5px;margin-top:5px;max-width:60ch}
-  .sub a{color:var(--amber);text-decoration:none;border-bottom:1px solid var(--amber-line)}
   .print-btn{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:0.08em;
     background:transparent;color:var(--ink);border:1px solid var(--hairline-bright);
     border-radius:2px;padding:9px 16px;cursor:pointer;text-transform:uppercase;transition:all .15s;white-space:nowrap}
@@ -142,48 +141,24 @@
   .ratio-note .rn-lead{color:var(--ink-faint);font-size:11px}
   @media(max-width:560px){.ratio-field{width:100%}}
 
-  /* ---- results table ---- */
-  .table-wrap{overflow-x:auto;margin:0 -2px;min-width:0;-webkit-overflow-scrolling:touch}
-  table.calc{width:auto;max-width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:14px;font-variant-numeric:tabular-nums}
-  table.calc th{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:600;letter-spacing:0.03em;
-    text-transform:uppercase;color:var(--ink-dim);text-align:right;padding:0 10px 9px;border-bottom:1px solid var(--hairline-bright);white-space:normal;line-height:1.15;vertical-align:bottom}
-  table.calc th.l,table.calc td.l{text-align:left}
-  table.calc th.c,table.calc td.chk{text-align:center}
-  table.calc th .u{display:block;color:var(--ink-faint);font-weight:400;font-size:9px;letter-spacing:0.02em}
-  table.calc td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--hairline);white-space:nowrap;color:var(--ink);font-weight:500}
-  table.calc td.lyr{color:var(--ink-dim);text-align:left;font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:500}
-  table.calc td.grog{text-align:center;padding:6px 8px}
-  table.calc td.grog input{width:64px;text-align:right;font-size:13px;padding:5px 6px;margin:0}
-  table.calc tr.total td{border-bottom:none;border-top:1px solid var(--hairline-bright);padding-top:11px;font-weight:700}
-  table.calc tr.total td.lyr{color:var(--ink);text-transform:uppercase;font-size:11px;letter-spacing:.04em;font-weight:600}
-  table.calc tr.total td.chk,table.calc tr.total td.grog{color:var(--ink-faint)}
-  table.calc tr.zero td{color:var(--ink-faint)}
-  table.calc tr.zero td.lyr{color:var(--ink-faint)}
-  .lbl-short{display:none}
-  @media(max-width:560px){
-    table.calc{font-size:12.5px}
-    table.calc th{padding:0 7px 7px;font-size:9px;letter-spacing:0.02em}
-    table.calc td{padding:7px 7px}
-    table.calc td.lyr{font-size:11px}
-    table.calc th.l,table.calc td.l{padding-left:2px}
-    table.calc tr.total td.lyr{font-size:10.5px}
-    table.calc td.grog{padding:5px 5px}
-    table.calc td.grog input{width:48px;font-size:12px;padding:4px 5px}
-    table.calc th .u{font-size:8px}
-    .lbl-full{display:none}
-    .lbl-short{display:inline}
-  }
+  /* ---- coddle read-out ---- */
+  .coddle-out{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .co-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .co-row .k{font-size:10.5px;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-dim);min-width:118px}
+  .co-row .v{font-family:"JetBrains Mono",monospace;font-size:23px;font-weight:600;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+  .co-row .v small{font-size:12px;color:var(--ink-dim);font-weight:400}
 
-  /* ---- reference table ---- */
-  .ref-scroll{max-height:340px;overflow-y:auto;border:1px solid var(--hairline);border-radius:3px}
-  table.ref{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:12.5px}
-  table.ref th{position:sticky;top:0;background:var(--raised-2);font-family:"Space Grotesk",sans-serif;font-size:10px;
-    font-weight:600;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink-dim);text-align:right;
-    padding:8px 10px;border-bottom:1px solid var(--hairline-bright);white-space:nowrap}
-  table.ref th.l,table.ref td.l{text-align:left}
-  table.ref td{text-align:right;padding:5px 10px;border-bottom:1px solid var(--hairline);white-space:nowrap;color:var(--ink-dim)}
-  table.ref td.l{color:var(--ink)}
-  .ref-note{font-size:12px;color:var(--ink-faint);margin:0 0 12px}
+  /* ---- pour result cards ---- */
+  .pour-results{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(min-width:620px){.pour-results{grid-template-columns:repeat(4,1fr)}}
+  .pr{background:var(--raised-2);border:1px solid var(--hairline);border-radius:4px;padding:13px 15px;display:flex;flex-direction:column;gap:7px}
+  .pr .k{font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-dim)}
+  .pr .v{font-family:"JetBrains Mono",monospace;font-size:25px;font-weight:600;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+  .pr .v small{font-size:12px;color:var(--ink-dim);font-weight:400}
+  .pr.hero{border-color:var(--amber-line);background:var(--amber-fill)}
+  .pr.hero .v{color:var(--amber)}
+
+  .sub a{color:var(--amber);text-decoration:none;border-bottom:1px solid var(--amber-line)}
 
   footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:26px;padding-top:14px;
     border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-faint)}
@@ -204,14 +179,11 @@
     input[type=checkbox]{width:12px;height:12px;border:1px solid #000}
     .modelvol .k{color:#333}.modelvol .v,.modelvol .v small{color:#000}
     .modelvol .v{font-size:20px}
-    table.calc{min-width:0;max-width:none;font-size:10px}
-    table.calc th{color:#000;border-color:#000;padding:0 6px 4px}
-    table.calc td{border-color:#bbb;color:#000;padding:4px 6px;font-weight:400}
-    table.calc tr.total td{font-weight:700}
-    table.ref{font-size:9.5px}
-    .ref-scroll{max-height:none;overflow:visible;border-color:#000}
-    table.ref th{color:#000;border-color:#000;background:#eee}
-    table.ref td{color:#000;border-color:#ccc}
+    .co-row .k{color:#333}.co-row .v,.co-row .v small{color:#000}.co-row .v{font-size:16px}
+    .pr{background:#fff;border-color:#999;padding:6px 8px}
+    .pr .k{color:#333}.pr .v,.pr .v small{color:#000}.pr .v{font-size:16px}
+    .pr.hero{background:#fff;border-color:#000}.pr.hero .v{color:#000}
+    .pour-results{gap:8px}
     footer{color:#555;border-color:#000}
   }
 </style>
@@ -224,8 +196,8 @@
   <header>
     <div class="title-block">
       <p class="eyebrow">Kiln Forming Workbook · Casting</p>
-      <h1>Investment Calculator <span class="qual">(hand-built layers)</span></h1>
-      <p class="sub">Hand-built molds use several layers of investment (water, plaster, and silica). If you're pouring instead, use the <a href="poured-mold.html">poured-mold calculator</a>.</p>
+      <h1>Investment Calculator <span class="qual">(poured mold)</span></h1>
+      <p class="sub">Poured molds fill a coddle box around the model with investment (water, plaster, and silica). If you're building up layers by hand instead, use the <a href="investment-calculator.html">hand-built calculator</a>.</p>
     </div>
     <div class="header-actions">
       <div class="btn-row">
@@ -364,19 +336,22 @@
     <div class="modelvol"><span class="k">Model volume</span><span class="v"><span id="mv_val">—</span> <small>cm³</small></span></div>
   </div>
 
-  <!-- step 2: thickness -->
+  <!-- step 2: coddle -->
   <div class="panel">
-    <div class="phead"><span class="n">STEP 2</span><h2>How thick is each layer?</h2></div>
+    <div class="phead"><span class="n">STEP 2</span><h2>How big is the coddle?</h2>
+      <span class="hint">gap from the model to the walls</span></div>
     <div class="grid c3">
-      <div class="field"><label for="t1">Layer 1 thickness (cm)</label><input id="t1" type="number" inputmode="decimal" min="0" step="0.1" value="2"></div>
-      <div class="field"><label for="t2">Layer 2 thickness (cm)</label><input id="t2" type="number" inputmode="decimal" min="0" step="0.1" value="2"></div>
-      <div class="field"><label for="t3">Layer 3 thickness (cm)</label><input id="t3" type="number" inputmode="decimal" min="0" step="0.1" value="2"></div>
+      <div class="field"><label for="clear">Clearance — model to coddle (cm)</label><input id="clear" type="number" inputmode="decimal" min="0" step="0.5" value="5"></div>
+    </div>
+    <div class="coddle-out">
+      <div class="co-row"><span class="k">Coddle interior</span><span class="v"><span id="cod_w">—</span> × <span id="cod_d">—</span> × <span id="cod_h">—</span> <small>cm · W×D×H</small></span></div>
+      <div class="co-row"><span class="k">Coddle volume</span><span class="v"><span id="cod_v">—</span> <small>cm³</small></span></div>
     </div>
   </div>
 
   <!-- step 3: recipe -->
   <div class="panel">
-    <div class="phead"><span class="n">STEP 3</span><h2>What's the recipe for each layer?</h2></div>
+    <div class="phead"><span class="n">STEP 3</span><h2>What's the recipe?</h2></div>
     <div class="ratio-row">
       <div class="field ratio-field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="number" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
       <div class="ratio-note">
@@ -385,47 +360,11 @@
         <div><b>2</b> = equal parts water / plaster / silica, thicker, stronger, denser.</div>
       </div>
     </div>
-    <div class="table-wrap" style="margin-top:16px">
-      <table class="calc">
-        <thead><tr>
-          <th class="l">Layer</th>
-          <th>Investment vol<span class="u">cm³</span></th>
-          <th>Water<span class="u">g</span></th>
-          <th>Plaster<span class="u">g</span></th>
-          <th>Silica<span class="u">g</span></th>
-          <th class="c">Fiberglass</th>
-          <th class="c">Grog<span class="u">g</span></th>
-        </tr></thead>
-        <tbody>
-          <tr id="lrow1">
-            <td class="l lyr">Layer 1</td>
-            <td id="v1_vol">—</td><td id="v1_water">—</td><td id="v1_plaster">—</td><td id="v1_silica">—</td>
-            <td class="chk"><input type="checkbox" id="fib1" aria-label="Layer 1 fiberglass"></td>
-            <td class="grog"><input type="number" inputmode="decimal" min="0" step="1" id="grog1" placeholder="0" aria-label="Layer 1 grog (g)"></td>
-          </tr>
-          <tr id="lrow2">
-            <td class="l lyr">Layer 2</td>
-            <td id="v2_vol">—</td><td id="v2_water">—</td><td id="v2_plaster">—</td><td id="v2_silica">—</td>
-            <td class="chk"><input type="checkbox" id="fib2" aria-label="Layer 2 fiberglass"></td>
-            <td class="grog"><input type="number" inputmode="decimal" min="0" step="1" id="grog2" placeholder="0" aria-label="Layer 2 grog (g)"></td>
-          </tr>
-          <tr id="lrow3">
-            <td class="l lyr">Layer 3</td>
-            <td id="v3_vol">—</td><td id="v3_water">—</td><td id="v3_plaster">—</td><td id="v3_silica">—</td>
-            <td class="chk"><input type="checkbox" id="fib3" aria-label="Layer 3 fiberglass"></td>
-            <td class="grog"><input type="number" inputmode="decimal" min="0" step="1" id="grog3" placeholder="0" aria-label="Layer 3 grog (g)"></td>
-          </tr>
-        </tbody>
-        <tfoot><tr class="total">
-          <td class="lyr"><span class="lbl-full">Total for all layers</span><span class="lbl-short">Total</span></td>
-          <td id="tot_vol">0</td>
-          <td id="tot_water">0</td>
-          <td id="tot_plaster">0</td>
-          <td id="tot_silica">0</td>
-          <td class="chk">—</td>
-          <td class="grog" id="tot_grog">—</td>
-        </tr></tfoot>
-      </table>
+    <div class="pour-results">
+      <div class="pr hero"><span class="k">Investment</span><span class="v"><span id="r_vol">—</span> <small>cm³</small></span></div>
+      <div class="pr"><span class="k">Water</span><span class="v"><span id="r_water">—</span> <small>g</small></span></div>
+      <div class="pr"><span class="k">Plaster</span><span class="v"><span id="r_plaster">—</span> <small>g</small></span></div>
+      <div class="pr"><span class="k">Silica</span><span class="v"><span id="r_silica">—</span> <small>g</small></span></div>
     </div>
   </div>
 
@@ -442,20 +381,6 @@
     </div>
     <div class="field" style="margin-top:12px"><label for="m_notes">Notes / Sketch</label>
       <textarea id="m_notes" rows="3" placeholder=""></textarea></div>
-  </div>
-
-  <!-- reference: common objects -->
-  <div class="panel">
-    <div class="phead"><span class="n">REF</span><h2>Common objects</h2></div>
-    <p class="ref-note">Investment volume (cm³) per layer for typical objects, figured at 2 cm layers.</p>
-    <div class="ref-scroll">
-      <table class="ref" id="ref_objects">
-        <thead><tr>
-          <th class="l">Object</th><th>Object vol<span></span></th><th>Layer 1</th><th>Layer 2</th><th>Layer 3</th>
-        </tr></thead>
-        <tbody id="refbody"></tbody>
-      </table>
-    </div>
   </div>
 
   <footer>
@@ -854,101 +779,58 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 <script>
 "use strict";
 
-/* ---------------- constants ---------------- */
 const WATER_PER_CM3 = 0.63987;   // Bullseye TipSheet 5: water (g) per cm3 of investment
 const $ = id => document.getElementById(id);
-
 let SHAPE = "sphere";
 
-// Common Objects reference — investment volume (cm3) per layer at 2 cm layers.
-// Transcribed verbatim from the workbook (Investment Calculator tab).
-const OBJECTS = [
-  ["Grape",5,85,265,546],["AA battery",8,153,464,927],["Walnut",15,133,349,666],
-  ["Golf ball",40,211,472,834],["Egg",55,246,524,903],["Lime",65,266,555,944],
-  ["Lemon",90,316,626,1037],["Deck of cards",105,413,911,1601],["Tennis ball",157,425,778,1232],
-  ["Apple",200,485,859,1334],["Baseball",204,489,865,1341],["Orange",219,509,892,1375],
-  ["Soda can",417,836,1459,2233],["Coffee mug",478,823,1414,2155],["Softball",481,794,1261,1828],
-  ["Grapefruit",549,857,1340,1924],["Brick",1083,1412,2258,3297],["Wine bottle",1325,1998,3092,4336],
-  ["Cantaloupe",1803,1734,2404,3174],["Basketball",7202,4075,5079,6184]
-];
-
-/* ---------------- helpers ---------------- */
 function num(id){ const v = parseFloat($(id).value); return (isNaN(v) || v < 0) ? 0 : v; }
 function fmt(x){ return Math.round(x).toLocaleString(); }
+function fmtDim(x){ const r = Math.round(x*10)/10; return Number.isInteger(r) ? String(r) : r.toFixed(1); }
 
-// outer volume of {model + all layers up to cumulative added thickness T}, in cm3.
-// At T = 0 this returns the bare model volume. Formulas mirror the workbook exactly.
-function outerVol(shape, d, T){
-  if(shape === "sphere"){          // spherical cap (dome): base radius d/2, height h
-    const a = d.d/2 + T;
-    const h = d.h + T;
-    return Math.PI * h / 6 * (3*a*a + h*h);
-  }
-  if(shape === "cylinder"){        // radius grows all round, height grows on top only
-    const r = d.d/2 + T;
-    const h = d.h + T;
-    return Math.PI * r*r * h;
-  }
-  // box: width & depth grow on both sides (2T), height on top only (T)
-  return (d.w + 2*T) * (d.d + 2*T) * (d.h + T);
+/* ---- geometry ---- */
+function modelVolume(shape, d){
+  if(shape === "sphere"){ const a = d.d/2, h = d.h; return Math.PI * h / 6 * (3*a*a + h*h); }
+  if(shape === "cylinder"){ const r = d.d/2; return Math.PI * r*r * d.h; }
+  return d.w * d.d * d.h;                 // box
 }
-
+// bounding box of the model (a poured coddle is rectangular regardless of shape)
+function bbox(shape, d){
+  if(shape === "box") return {w:d.w, d:d.d, h:d.h};
+  return {w:d.d, d:d.d, h:d.h};           // sphere & cylinder: square footprint from the diameter
+}
 function currentDims(){
   if(SHAPE === "sphere")   return {d:num("sp_d"), h:num("sp_h")};
   if(SHAPE === "cylinder") return {d:num("cy_d"), h:num("cy_h")};
   return {w:num("bx_w"), d:num("bx_d"), h:num("bx_h")};
 }
 
-/* ---------------- core calc ---------------- */
+/* ---- core calc ---- */
 function recalc(){
-  const dims  = currentDims();
+  const d = currentDims();
+  const c = num("clear");
   const ratio = (()=>{ const r = parseFloat($("ratio").value); return (isNaN(r) || r <= 0) ? 0 : r; })();
 
-  const t = [num("t1"), num("t2"), num("t3")];
-  const cum = [0, t[0], t[0]+t[1], t[0]+t[1]+t[2]];
-  const outers = cum.map(T => outerVol(SHAPE, dims, T));
-  const model = outers[0];
-  const layerVol = [outers[1]-outers[0], outers[2]-outers[1], outers[3]-outers[2]];
+  const model = modelVolume(SHAPE, d);
+  const bb = bbox(SHAPE, d);
+  const cw = bb.w + 2*c, cd = bb.d + 2*c, ch = bb.h + c;   // clearance both sides of W/D, top only for H
+  const cvol = cw * cd * ch;
+  const inv = Math.max(0, cvol - model);                   // investment fills the coddle around the model
+  const water = inv * WATER_PER_CM3;
+  const dry = water * ratio;
+  const plaster = dry/2, silica = dry/2;
 
-  const rows = layerVol.map(v => {
-    const vol = Math.max(0, v);
-    const water = vol * WATER_PER_CM3;
-    const dry = water * ratio;         // total dry investment
-    const plaster = dry / 2;           // plaster and silica split evenly
-    return {vol, water, plaster, silica: plaster};
-  });
-
-  // fill the static per-layer cells
-  rows.forEach((r, i) => {
-    const n = i + 1;
-    const zero = t[i] <= 0 || r.vol <= 0;
-    $("lrow"+n).classList.toggle("zero", zero);
-    $("v"+n+"_vol").textContent     = zero ? "—" : fmt(r.vol);
-    $("v"+n+"_water").textContent   = zero ? "—" : fmt(r.water);
-    $("v"+n+"_plaster").textContent = zero ? "—" : fmt(r.plaster);
-    $("v"+n+"_silica").textContent  = zero ? "—" : fmt(r.silica);
-  });
-
-  // totals
-  const totVol = rows.reduce((s,r)=>s+r.vol,0);
-  const totWater = rows.reduce((s,r)=>s+r.water,0);
-  const totPlaster = rows.reduce((s,r)=>s+r.plaster,0);
-  const totSilica = rows.reduce((s,r)=>s+r.silica,0);
-
-  $("tot_vol").textContent = fmt(totVol);
-  $("tot_water").textContent = fmt(totWater);
-  $("tot_plaster").textContent = fmt(totPlaster);
-  $("tot_silica").textContent = fmt(totSilica);
-
-  // grog is a user-entered amount (g), not derived — just total it
-  const totGrog = num("grog1") + num("grog2") + num("grog3");
-  $("tot_grog").textContent = totGrog > 0 ? fmt(totGrog) : "—";
-
-  // prominent model volume
   $("mv_val").textContent = fmt(model);
+  $("cod_w").textContent = fmtDim(cw);
+  $("cod_d").textContent = fmtDim(cd);
+  $("cod_h").textContent = fmtDim(ch);
+  $("cod_v").textContent = fmt(cvol);
+  $("r_vol").textContent = fmt(inv);
+  $("r_water").textContent = fmt(water);
+  $("r_plaster").textContent = fmt(plaster);
+  $("r_silica").textContent = fmt(silica);
 }
 
-/* ---------------- shape switch ---------------- */
+/* ---- shape switch ---- */
 function showShape(s){
   ["sphere","cylinder","box"].forEach(k => {
     const on = (k === s);
@@ -957,52 +839,30 @@ function showShape(s){
     $("dia-"+k).classList.toggle("on", on);
   });
 }
-function setShape(s){
-  if(s === SHAPE) return;
-  SHAPE = s;
-  showShape(s);
-  recalc();
-}
+function setShape(s){ if(s === SHAPE) return; SHAPE = s; showShape(s); recalc(); }
 
-/* ---------------- reference table ---------------- */
-function renderObjects(){
-  $("refbody").innerHTML = OBJECTS.map(o =>
-    `<tr><td class="l">${o[0]}</td><td>${o[1].toLocaleString()}</td>` +
-    `<td>${o[2].toLocaleString()}</td><td>${o[3].toLocaleString()}</td><td>${o[4].toLocaleString()}</td></tr>`
-  ).join("");
-}
-
-/* ---------------- save / restore (self-contained snapshot) ---------------- */
+/* ---- save / restore snapshot ---- */
 const SNAP_FIELDS = ["sp_d","sp_h","cy_d","cy_h","bx_w","bx_h","bx_d",
-  "t1","t2","t3","ratio","grog1","grog2","grog3","m_name","m_proj","m_date","m_notes"];
-const SNAP_CHECKS = ["fib1","fib2","fib3"];
+  "clear","ratio","m_name","m_proj","m_date","m_notes"];
 
 function captureState(){
-  const st = {shape:SHAPE, fields:{}, checks:{}};
+  const st = {shape:SHAPE, fields:{}};
   SNAP_FIELDS.forEach(id => { const el = $(id); if(el) st.fields[id] = el.value; });
-  SNAP_CHECKS.forEach(id => { const el = $(id); if(el) st.checks[id] = !!el.checked; });
   return st;
 }
 function applyState(st){
   if(!st) return;
   const f = st.fields || {};
   Object.keys(f).forEach(id => { const el = $(id); if(el) el.value = f[id]; });
-  const c = st.checks || {};
-  Object.keys(c).forEach(id => { const el = $(id); if(el) el.checked = !!c[id]; });
-  if(st.shape === "sphere" || st.shape === "cylinder" || st.shape === "box"){
-    SHAPE = st.shape;
-    showShape(SHAPE);
-  }
+  if(st.shape === "sphere" || st.shape === "cylinder" || st.shape === "box"){ SHAPE = st.shape; showShape(SHAPE); }
   recalc();
 }
 function restoreSnapshot(){
-  const node = $("snapshot-state");
-  if(!node) return;
+  const node = $("snapshot-state"); if(!node) return;
   let st; try{ st = JSON.parse(node.textContent); }catch(e){ return; }
   applyState(st);
 }
 
-// YYYY-MM-DD_project
 function snapBaseName(){
   const dv = ($("m_date").value || "").trim();
   let yyyy, mm, dd;
@@ -1011,7 +871,7 @@ function snapBaseName(){
   const date = `${yyyy}-${mm}-${dd}`;
   const clean = s => String(s||"").toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
   const proj = clean($("m_proj").value) || "investment";
-  return `${date}_${proj}_investment`;
+  return `${date}_${proj}_poured`;
 }
 function snapFilename(){ return snapBaseName()+".html"; }
 
@@ -1027,11 +887,9 @@ function buildSnapshotHTML(){
   clone.querySelector("body").appendChild(s);
   return "<!DOCTYPE html>\n" + clone.outerHTML;
 }
-
 function saveSnapshot(){
   const filename = snapFilename();
-  let text;
-  try{ text = buildSnapshotHTML(); }catch(e){ toast("Couldn't build the file"); return; }
+  let text; try{ text = buildSnapshotHTML(); }catch(e){ toast("Couldn't build the file"); return; }
   const blob = new Blob([text], {type:"text/html"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1041,22 +899,10 @@ function saveSnapshot(){
   toast("Saved  " + filename);
 }
 
-/* ---------------- PDF export ---------------- */
+/* ---- PDF ---- */
 function pdfData(){
   const val = id => { const e = $(id); return e ? e.value : ""; };
   const txt = id => { const e = $(id); return e ? e.textContent.trim() : ""; };
-  const grogStr = id => { const v = parseFloat(val(id)); return (isNaN(v) || v <= 0) ? "" : v.toLocaleString(); };
-  const rows = [];
-  let grogTot = 0;
-  for(let i=1;i<=3;i++){
-    const g = parseFloat(val("grog"+i)); if(!isNaN(g) && g > 0) grogTot += g;
-    rows.push([
-      "Layer "+i,
-      txt("v"+i+"_vol"), txt("v"+i+"_water"), txt("v"+i+"_plaster"), txt("v"+i+"_silica"),
-      ($("fib"+i) && $("fib"+i).checked) ? "X" : "",
-      grogStr("grog"+i)
-    ]);
-  }
   const shapeLabel = {sphere:"Half sphere", cylinder:"Cylinder", box:"Box"}[SHAPE] || SHAPE;
   let dims;
   if(SHAPE === "sphere")        dims = `Diameter ${val("sp_d")} cm · Height ${val("sp_h")} cm`;
@@ -1064,28 +910,25 @@ function pdfData(){
   else                          dims = `${val("bx_w")} × ${val("bx_d")} × ${val("bx_h")} cm (W×D×H)`;
   return {
     name:val("m_name"), proj:val("m_proj"), date:val("m_date"),
-    shape:shapeLabel, dims,
-    layers:`${val("t1")} / ${val("t2")} / ${val("t3")} cm`, ratio:val("ratio"),
-    model:($("mv_val").textContent||""),
-    totVol:($("tot_vol").textContent||""), totWater:($("tot_water").textContent||""),
-    totPlaster:($("tot_plaster").textContent||""), totSilica:($("tot_silica").textContent||""),
-    totGrog: grogTot > 0 ? grogTot.toLocaleString() : "",
-    rows, notes:val("m_notes"),
+    shape:shapeLabel, dims, clear:val("clear"), ratio:val("ratio"),
+    coddle:`${txt("cod_w")} x ${txt("cod_d")} x ${txt("cod_h")} cm  (volume ${txt("cod_v")} cm3)`,
+    model:txt("mv_val"),
+    inv:txt("r_vol"), water:txt("r_water"), plaster:txt("r_plaster"), silica:txt("r_silica"),
+    notes:val("m_notes"),
     filename: snapBaseName()+".pdf"
   };
 }
 
 function buildPdf(J, data){
   const doc = new J({unit:"pt", format:"letter"});
-  const L=40, R=572, CX=306; let y=50;
-  const FOOT=756;
+  const L=40, R=572, CX=306; let y=50; const FOOT=756;
 
   doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(20);
   const _title="Investment Calculator";
   const _tw=doc.getTextWidth(_title);
   doc.text(_title, L, y);
   doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(120);
-  doc.text("(hand-built layers)", L + _tw + 8, y);
+  doc.text("(poured mold)", L + _tw + 8, y);
   doc.setFontSize(10); doc.setTextColor(110);
   doc.text(String(data.proj||""), R, y, {align:"right"});
   y+=9; doc.setDrawColor(20); doc.setLineWidth(0.8); doc.line(L,y,R,y); y+=19;
@@ -1095,26 +938,23 @@ function buildPdf(J, data){
   doc.text(`Name: ${data.name||"—"}      Date: ${data.date||"—"}`, L, y); y+=14;
   doc.text(`Shape: ${data.shape}      ${data.dims}`, L, y); y+=14;
   doc.setFont("helvetica","normal");
-  doc.text(`Layers: ${data.layers}      Mix ratio (water:investment): ${data.ratio||"—"}`, L, y); y+=14;
+  doc.text(`Clearance: ${data.clear||"—"} cm      Mix ratio (water:investment): ${data.ratio||"—"}`, L, y); y+=14;
+  doc.text(`Coddle interior: ${data.coddle}`, L, y); y+=14;
   doc.text(`Model volume: ${data.model} cm3`, L, y); y+=18;
 
   doc.autoTable({
     startY:y, margin:{left:L,right:40},
-    head:[["Layer","Investment (cm3)","Water (g)","Plaster (g)","Silica (g)","Fiberglass","Grog"]],
-    body:data.rows,
-    foot:[["Total for all layers", data.totVol, data.totWater, data.totPlaster, data.totSilica, "", data.totGrog]],
-    styles:{font:"helvetica",fontSize:9,cellPadding:5,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20],halign:"right"},
+    head:[["Investment (cm3)","Water (g)","Plaster (g)","Silica (g)"]],
+    body:[[data.inv, data.water, data.plaster, data.silica]],
+    styles:{font:"helvetica",fontSize:10,cellPadding:6,lineColor:[200,200,200],lineWidth:0.5,textColor:[20,20,20],halign:"right"},
     headStyles:{fillColor:[28,32,37],textColor:[255,255,255],fontStyle:"bold",halign:"right"},
-    footStyles:{fillColor:[245,245,245],textColor:[20,20,20],fontStyle:"bold",halign:"right"},
-    columnStyles:{0:{halign:"left"},5:{halign:"center"},6:{halign:"center"}},
     theme:"grid"
   });
   y = doc.lastAutoTable.finalY + 20;
 
-  // notes box
   doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(20);
   doc.text("Notes / Sketch", L, y); y+=8;
-  const boxH = Math.max(120, FOOT - y - 30);
+  const boxH = Math.max(170, FOOT - y - 30);
   doc.setDrawColor(150); doc.setLineWidth(0.5); doc.rect(L, y, R-L, boxH);
   if(data.notes){ doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(20);
     doc.text(doc.splitTextToSize(String(data.notes), R-L-14), L+7, y+16); }
@@ -1140,7 +980,7 @@ function savePDF(){
   toast("Saved  " + name);
 }
 
-/* ---------------- toast ---------------- */
+/* ---- toast ---- */
 let _toastT;
 function toast(msg){
   const t = $("toast"); if(!t) return;
@@ -1148,19 +988,14 @@ function toast(msg){
   clearTimeout(_toastT); _toastT = setTimeout(()=>t.classList.remove("show"), 2800);
 }
 
-/* ---------------- init ---------------- */
+/* ---- init ---- */
 function init(){
   const t = new Date();
   $("m_date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
-
-  renderObjects();
-
-  // recompute on any dimension / layer / ratio edit
-  ["sp_d","sp_h","cy_d","cy_h","bx_w","bx_d","bx_h","t1","t2","t3","ratio","grog1","grog2","grog3"]
+  ["sp_d","sp_h","cy_d","cy_h","bx_w","bx_d","bx_h","clear","ratio"]
     .forEach(id => $(id).addEventListener("input", recalc));
-
   recalc();
-  restoreSnapshot();   // if this file is a saved snapshot, override defaults with saved state
+  restoreSnapshot();
 }
 document.addEventListener("DOMContentLoaded", init);
 </script>
