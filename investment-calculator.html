@@ -224,7 +224,7 @@
     <div class="title-block">
       <p class="eyebrow">Kiln Forming Workbook · Casting</p>
       <h1>Investment Calculator <span class="qual">(hand-built layers)</span></h1>
-      <p class="sub">Hand-built molds use several layers of investment. Investment is water, plaster, and silica. If you're pouring instead, use the poured-mold calculator.</p>
+      <p class="sub">Hand-built molds use several layers of investment (water, plaster, and silica). If you're pouring instead, use the poured-mold calculator.</p>
     </div>
     <div class="header-actions">
       <div class="btn-row">
@@ -237,7 +237,7 @@
   <!-- model -->
   <div class="panel">
     <div class="phead"><span class="n">STEP 1</span><h2>How big is your model?</h2>
-      <span class="hint">your best estimate</span></div>
+      <span class="hint">Which shape fits your model the best?</span></div>
 
     <div class="seg" role="group" aria-label="Model shape">
       <button type="button" id="shape-sphere" class="on" onclick="setShape('sphere')">Half sphere</button>
@@ -439,7 +439,7 @@
     <div class="grid c2" style="margin-top:12px">
       <div class="field"><label for="m_date">Date</label><input id="m_date" type="date"></div>
     </div>
-    <div class="field" style="margin-top:12px"><label for="m_notes">Notes</label>
+    <div class="field" style="margin-top:12px"><label for="m_notes">Notes / Sketch</label>
       <textarea id="m_notes" rows="3" placeholder=""></textarea></div>
   </div>
 
@@ -1112,7 +1112,7 @@ function buildPdf(J, data){
 
   // notes box
   doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(20);
-  doc.text("Notes", L, y); y+=8;
+  doc.text("Notes / Sketch", L, y); y+=8;
   const boxH = Math.max(120, FOOT - y - 30);
   doc.setDrawColor(150); doc.setLineWidth(0.5); doc.rect(L, y, R-L, boxH);
   if(data.notes){ doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(20);
