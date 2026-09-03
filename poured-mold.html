@@ -313,23 +313,23 @@
 
     <div class="dimgroup on" id="dg-sphere" style="display:block;margin-top:6px">
       <div class="grid c2">
-        <div class="field"><label for="sp_d">Diameter (cm)</label><input id="sp_d" type="number" inputmode="decimal" min="0" step="0.1" value="8"></div>
-        <div class="field"><label for="sp_h">Height (cm)</label><input id="sp_h" type="number" inputmode="decimal" min="0" step="0.1" value="5"></div>
+        <div class="field"><label for="sp_d">Diameter (cm)</label><input id="sp_d" type="text" inputmode="decimal" min="0" step="0.1" value="8"></div>
+        <div class="field"><label for="sp_h">Height (cm)</label><input id="sp_h" type="text" inputmode="decimal" min="0" step="0.1" value="5"></div>
       </div>
     </div>
 
     <div class="dimgroup" id="dg-cylinder" style="display:none;margin-top:6px">
       <div class="grid c2">
-        <div class="field"><label for="cy_d">Diameter (cm)</label><input id="cy_d" type="number" inputmode="decimal" min="0" step="0.1" value="8"></div>
-        <div class="field"><label for="cy_h">Height (cm)</label><input id="cy_h" type="number" inputmode="decimal" min="0" step="0.1" value="4.5"></div>
+        <div class="field"><label for="cy_d">Diameter (cm)</label><input id="cy_d" type="text" inputmode="decimal" min="0" step="0.1" value="8"></div>
+        <div class="field"><label for="cy_h">Height (cm)</label><input id="cy_h" type="text" inputmode="decimal" min="0" step="0.1" value="4.5"></div>
       </div>
     </div>
 
     <div class="dimgroup" id="dg-box" style="display:none;margin-top:6px">
       <div class="grid c3">
-        <div class="field"><label for="bx_w">Width (cm)</label><input id="bx_w" type="number" inputmode="decimal" min="0" step="0.1" value="10"></div>
-        <div class="field"><label for="bx_d">Depth (cm)</label><input id="bx_d" type="number" inputmode="decimal" min="0" step="0.1" value="8"></div>
-        <div class="field"><label for="bx_h">Height (cm)</label><input id="bx_h" type="number" inputmode="decimal" min="0" step="0.1" value="6"></div>
+        <div class="field"><label for="bx_w">Width (cm)</label><input id="bx_w" type="text" inputmode="decimal" min="0" step="0.1" value="10"></div>
+        <div class="field"><label for="bx_d">Depth (cm)</label><input id="bx_d" type="text" inputmode="decimal" min="0" step="0.1" value="8"></div>
+        <div class="field"><label for="bx_h">Height (cm)</label><input id="bx_h" type="text" inputmode="decimal" min="0" step="0.1" value="6"></div>
       </div>
     </div>
 
@@ -341,7 +341,7 @@
     <div class="phead"><span class="n">STEP 2</span><h2>How big is the coddle?</h2>
       <span class="hint">gap from the model to the walls</span></div>
     <div class="grid c3">
-      <div class="field"><label for="clear">Clearance — model to coddle (cm)</label><input id="clear" type="number" inputmode="decimal" min="0" step="0.5" value="5"></div>
+      <div class="field"><label for="clear">Clearance — model to coddle (cm)</label><input id="clear" type="text" inputmode="decimal" min="0" step="0.5" value="5"></div>
     </div>
     <div class="coddle-out">
       <div class="co-row"><span class="k">Coddle interior</span><span class="v"><span id="cod_w">—</span> × <span id="cod_d">—</span> × <span id="cod_h">—</span> <small>cm · W×D×H</small></span></div>
@@ -353,7 +353,7 @@
   <div class="panel">
     <div class="phead"><span class="n">STEP 3</span><h2>What's the recipe?</h2></div>
     <div class="ratio-row">
-      <div class="field ratio-field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="number" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
+      <div class="field ratio-field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="text" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
       <div class="ratio-note">
         <div class="rn-lead">Water to dry investment, by weight.</div>
         <div><b>1.75</b> = more water, thinner slurry, easier detail, slightly weaker, easier to pour.</div>
@@ -998,6 +998,37 @@ function init(){
   restoreSnapshot();
 }
 document.addEventListener("DOMContentLoaded", init);
+</script>
+<script>
+/* ---------------- tap-to-replace ----------------
+   Focusing a field selects its whole contents, so typing overwrites the old
+   value instead of appending to it. Tap a second time to place a caret and
+   edit in place as usual. */
+(function(){
+  var SKIP = {checkbox:1,radio:1,date:1,file:1,button:1,submit:1,reset:1,range:1,color:1,image:1,hidden:1};
+  var armed = null;
+  function eligible(el){
+    return !!el && el.tagName === "INPUT" && !SKIP[el.type] && !el.readOnly && !el.disabled;
+  }
+  function selectAll(el){
+    try{ el.select(); }catch(e){}
+  }
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if(!eligible(el)) return;
+    armed = el;
+    selectAll(el);
+    setTimeout(function(){ if(document.activeElement === el) selectAll(el); }, 0);
+  });
+  /* desktop: the mouseup that completes the click would otherwise collapse
+     the fresh selection down to a caret */
+  document.addEventListener("mouseup", function(e){
+    if(armed && e.target === armed){ armed = null; e.preventDefault(); }
+  });
+  document.addEventListener("focusout", function(e){
+    if(armed === e.target) armed = null;
+  });
+})();
 </script>
 </body>
 </html>

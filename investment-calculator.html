@@ -341,23 +341,23 @@
 
     <div class="dimgroup on" id="dg-sphere" style="display:block;margin-top:6px">
       <div class="grid c2">
-        <div class="field"><label for="sp_d">Diameter (cm)</label><input id="sp_d" type="number" inputmode="decimal" min="0" step="0.1" value="8"></div>
-        <div class="field"><label for="sp_h">Height (cm)</label><input id="sp_h" type="number" inputmode="decimal" min="0" step="0.1" value="5"></div>
+        <div class="field"><label for="sp_d">Diameter (cm)</label><input id="sp_d" type="text" inputmode="decimal" min="0" step="0.1" value="8"></div>
+        <div class="field"><label for="sp_h">Height (cm)</label><input id="sp_h" type="text" inputmode="decimal" min="0" step="0.1" value="5"></div>
       </div>
     </div>
 
     <div class="dimgroup" id="dg-cylinder" style="display:none;margin-top:6px">
       <div class="grid c2">
-        <div class="field"><label for="cy_d">Diameter (cm)</label><input id="cy_d" type="number" inputmode="decimal" min="0" step="0.1" value="8"></div>
-        <div class="field"><label for="cy_h">Height (cm)</label><input id="cy_h" type="number" inputmode="decimal" min="0" step="0.1" value="4.5"></div>
+        <div class="field"><label for="cy_d">Diameter (cm)</label><input id="cy_d" type="text" inputmode="decimal" min="0" step="0.1" value="8"></div>
+        <div class="field"><label for="cy_h">Height (cm)</label><input id="cy_h" type="text" inputmode="decimal" min="0" step="0.1" value="4.5"></div>
       </div>
     </div>
 
     <div class="dimgroup" id="dg-box" style="display:none;margin-top:6px">
       <div class="grid c3">
-        <div class="field"><label for="bx_w">Width (cm)</label><input id="bx_w" type="number" inputmode="decimal" min="0" step="0.1" value="10"></div>
-        <div class="field"><label for="bx_d">Depth (cm)</label><input id="bx_d" type="number" inputmode="decimal" min="0" step="0.1" value="8"></div>
-        <div class="field"><label for="bx_h">Height (cm)</label><input id="bx_h" type="number" inputmode="decimal" min="0" step="0.1" value="6"></div>
+        <div class="field"><label for="bx_w">Width (cm)</label><input id="bx_w" type="text" inputmode="decimal" min="0" step="0.1" value="10"></div>
+        <div class="field"><label for="bx_d">Depth (cm)</label><input id="bx_d" type="text" inputmode="decimal" min="0" step="0.1" value="8"></div>
+        <div class="field"><label for="bx_h">Height (cm)</label><input id="bx_h" type="text" inputmode="decimal" min="0" step="0.1" value="6"></div>
       </div>
     </div>
 
@@ -368,9 +368,9 @@
   <div class="panel">
     <div class="phead"><span class="n">STEP 2</span><h2>How thick is each layer?</h2></div>
     <div class="grid c3">
-      <div class="field"><label for="t1">Layer 1 thickness (cm)</label><input id="t1" type="number" inputmode="decimal" min="0" step="0.1" value="2"></div>
-      <div class="field"><label for="t2">Layer 2 thickness (cm)</label><input id="t2" type="number" inputmode="decimal" min="0" step="0.1" value="2"></div>
-      <div class="field"><label for="t3">Layer 3 thickness (cm)</label><input id="t3" type="number" inputmode="decimal" min="0" step="0.1" value="2"></div>
+      <div class="field"><label for="t1">Layer 1 thickness (cm)</label><input id="t1" type="text" inputmode="decimal" min="0" step="0.1" value="2"></div>
+      <div class="field"><label for="t2">Layer 2 thickness (cm)</label><input id="t2" type="text" inputmode="decimal" min="0" step="0.1" value="2"></div>
+      <div class="field"><label for="t3">Layer 3 thickness (cm)</label><input id="t3" type="text" inputmode="decimal" min="0" step="0.1" value="2"></div>
     </div>
   </div>
 
@@ -378,7 +378,7 @@
   <div class="panel">
     <div class="phead"><span class="n">STEP 3</span><h2>What's the recipe for each layer?</h2></div>
     <div class="ratio-row">
-      <div class="field ratio-field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="number" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
+      <div class="field ratio-field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="text" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
       <div class="ratio-note">
         <div class="rn-lead">Water to dry investment, by weight.</div>
         <div><b>1.75</b> = more water, thinner slurry, easier detail, slightly weaker, easier to pour.</div>
@@ -401,19 +401,19 @@
             <td class="l lyr">Layer 1</td>
             <td id="v1_vol">—</td><td id="v1_water">—</td><td id="v1_plaster">—</td><td id="v1_silica">—</td>
             <td class="chk"><input type="checkbox" id="fib1" aria-label="Layer 1 fiberglass"></td>
-            <td class="grog"><input type="number" inputmode="decimal" min="0" step="1" id="grog1" placeholder="0" aria-label="Layer 1 grog (g)"></td>
+            <td class="grog"><input type="text" inputmode="decimal" min="0" step="1" id="grog1" placeholder="0" aria-label="Layer 1 grog (g)"></td>
           </tr>
           <tr id="lrow2">
             <td class="l lyr">Layer 2</td>
             <td id="v2_vol">—</td><td id="v2_water">—</td><td id="v2_plaster">—</td><td id="v2_silica">—</td>
             <td class="chk"><input type="checkbox" id="fib2" aria-label="Layer 2 fiberglass"></td>
-            <td class="grog"><input type="number" inputmode="decimal" min="0" step="1" id="grog2" placeholder="0" aria-label="Layer 2 grog (g)"></td>
+            <td class="grog"><input type="text" inputmode="decimal" min="0" step="1" id="grog2" placeholder="0" aria-label="Layer 2 grog (g)"></td>
           </tr>
           <tr id="lrow3">
             <td class="l lyr">Layer 3</td>
             <td id="v3_vol">—</td><td id="v3_water">—</td><td id="v3_plaster">—</td><td id="v3_silica">—</td>
             <td class="chk"><input type="checkbox" id="fib3" aria-label="Layer 3 fiberglass"></td>
-            <td class="grog"><input type="number" inputmode="decimal" min="0" step="1" id="grog3" placeholder="0" aria-label="Layer 3 grog (g)"></td>
+            <td class="grog"><input type="text" inputmode="decimal" min="0" step="1" id="grog3" placeholder="0" aria-label="Layer 3 grog (g)"></td>
           </tr>
         </tbody>
         <tfoot><tr class="total">
@@ -1163,6 +1163,37 @@ function init(){
   restoreSnapshot();   // if this file is a saved snapshot, override defaults with saved state
 }
 document.addEventListener("DOMContentLoaded", init);
+</script>
+<script>
+/* ---------------- tap-to-replace ----------------
+   Focusing a field selects its whole contents, so typing overwrites the old
+   value instead of appending to it. Tap a second time to place a caret and
+   edit in place as usual. */
+(function(){
+  var SKIP = {checkbox:1,radio:1,date:1,file:1,button:1,submit:1,reset:1,range:1,color:1,image:1,hidden:1};
+  var armed = null;
+  function eligible(el){
+    return !!el && el.tagName === "INPUT" && !SKIP[el.type] && !el.readOnly && !el.disabled;
+  }
+  function selectAll(el){
+    try{ el.select(); }catch(e){}
+  }
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if(!eligible(el)) return;
+    armed = el;
+    selectAll(el);
+    setTimeout(function(){ if(document.activeElement === el) selectAll(el); }, 0);
+  });
+  /* desktop: the mouseup that completes the click would otherwise collapse
+     the fresh selection down to a caret */
+  document.addEventListener("mouseup", function(e){
+    if(armed && e.target === armed){ armed = null; e.preventDefault(); }
+  });
+  document.addEventListener("focusout", function(e){
+    if(armed === e.target) armed = null;
+  });
+})();
 </script>
 </body>
 </html>

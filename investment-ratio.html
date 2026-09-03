@@ -145,8 +145,8 @@
   <div class="panel" id="calc-panel">
     <div class="phead"><span class="n">01</span><h2>Investment → water, plaster, silica</h2></div>
     <div class="grid c3">
-      <div class="field"><label for="iv">Investment volume (cm³)</label><input id="iv" type="number" inputmode="decimal" min="0" step="1" value="1000"></div>
-      <div class="field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="number" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
+      <div class="field"><label for="iv">Investment volume (cm³)</label><input id="iv" type="text" inputmode="decimal" min="0" step="1" value="1000"></div>
+      <div class="field"><label for="ratio">Mix ratio (water : investment)</label><input id="ratio" type="text" inputmode="decimal" min="0.1" step="0.05" value="1.75"></div>
     </div>
     <div class="ratio-note">
       <div class="rn-lead">Water to dry investment, by weight.</div>
@@ -683,6 +683,37 @@ function init(){
   recalcCalc();
 }
 document.addEventListener("DOMContentLoaded", init);
+</script>
+<script>
+/* ---------------- tap-to-replace ----------------
+   Focusing a field selects its whole contents, so typing overwrites the old
+   value instead of appending to it. Tap a second time to place a caret and
+   edit in place as usual. */
+(function(){
+  var SKIP = {checkbox:1,radio:1,date:1,file:1,button:1,submit:1,reset:1,range:1,color:1,image:1,hidden:1};
+  var armed = null;
+  function eligible(el){
+    return !!el && el.tagName === "INPUT" && !SKIP[el.type] && !el.readOnly && !el.disabled;
+  }
+  function selectAll(el){
+    try{ el.select(); }catch(e){}
+  }
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if(!eligible(el)) return;
+    armed = el;
+    selectAll(el);
+    setTimeout(function(){ if(document.activeElement === el) selectAll(el); }, 0);
+  });
+  /* desktop: the mouseup that completes the click would otherwise collapse
+     the fresh selection down to a caret */
+  document.addEventListener("mouseup", function(e){
+    if(armed && e.target === armed){ armed = null; e.preventDefault(); }
+  });
+  document.addEventListener("focusout", function(e){
+    if(armed === e.target) armed = null;
+  });
+})();
 </script>
 </body>
 </html>

@@ -369,10 +369,10 @@
       <span class="hint">clock times below are figured from this</span></div>
     <div class="start-row">
       <div class="field"><label for="s_date">Start date</label><input id="s_date" type="date"></div>
-      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="number" inputmode="numeric" min="1" max="12" value="9"></div>
-      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="number" inputmode="numeric" min="0" max="59" value="0"></div>
+      <div class="field"><label for="s_hour">Hour (1–12)</label><input id="s_hour" type="text" inputmode="numeric" min="1" max="12" value="9"></div>
+      <div class="field"><label for="s_min">Minute</label><input id="s_min" type="text" inputmode="numeric" min="0" max="59" value="0"></div>
       <div class="field"><label for="s_ampm">AM / PM</label><select id="s_ampm"><option selected>AM</option><option>PM</option></select></div>
-      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="number" inputmode="decimal" min="0" step="0.5" value="0"></div>
+      <div class="field"><label for="s_delay">Delay (hrs)</label><input id="s_delay" type="text" inputmode="decimal" min="0" step="0.5" value="0"></div>
     </div>
   </div>
 
@@ -407,7 +407,7 @@
       <span><span class="swatch inp"></span>Input cell</span>
       <span><span class="swatch out"></span>Calculated</span>
       <span><span class="afap-tag">AFAP</span> = as fast as possible; enter <b style="color:var(--ink-dim)">9999</b></span>
-      <span class="afap-rate">AFAP est. rate <input id="cfg_afap" data-k="rate" type="number" value="450" min="1" aria-label="AFAP estimate rate (degrees per hour)"> °<span class="u-lbl">F</span>/hr</span>
+      <span class="afap-rate">AFAP est. rate <input id="cfg_afap" data-k="rate" type="text" inputmode="decimal" value="450" min="1" aria-label="AFAP estimate rate (degrees per hour)"> °<span class="u-lbl">F</span>/hr</span>
     </div>
     <div class="seg-tools"><button type="button" class="reset-btn" onclick="resetToRecommended()">↺ Reset edits to recommended</button></div>
     <div id="seg-warn" class="seg-warn" role="alert"></div>
@@ -1331,7 +1331,7 @@ function buildGlassRows(){
       `<td><input type="text" data-g="brand" placeholder="—"></td>
        <td><input type="text" data-g="code" placeholder="—"></td>
        <td><select data-g="form"><option value="" selected>—</option><option>Billet</option><option>Cullet</option><option>Frit</option><option>Powder</option><option>Sheet</option><option>Other</option></select></td>
-       <td class="r"><input class="gw" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></td>`;
+       <td class="r"><input class="gw" type="text" inputmode="decimal" min="0" step="any" placeholder="0"></td>`;
     tb.appendChild(tr);
   }
   tb.querySelectorAll("input.gw").forEach(inp=>inp.addEventListener("input",sumGlass));
@@ -1636,6 +1636,37 @@ function init(){
   restoreSnapshot(); // if this file is a saved snapshot, override the defaults with saved state
 }
 document.addEventListener("DOMContentLoaded",init);
+</script>
+<script>
+/* ---------------- tap-to-replace ----------------
+   Focusing a field selects its whole contents, so typing overwrites the old
+   value instead of appending to it. Tap a second time to place a caret and
+   edit in place as usual. */
+(function(){
+  var SKIP = {checkbox:1,radio:1,date:1,file:1,button:1,submit:1,reset:1,range:1,color:1,image:1,hidden:1};
+  var armed = null;
+  function eligible(el){
+    return !!el && el.tagName === "INPUT" && !SKIP[el.type] && !el.readOnly && !el.disabled;
+  }
+  function selectAll(el){
+    try{ el.select(); }catch(e){}
+  }
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if(!eligible(el)) return;
+    armed = el;
+    selectAll(el);
+    setTimeout(function(){ if(document.activeElement === el) selectAll(el); }, 0);
+  });
+  /* desktop: the mouseup that completes the click would otherwise collapse
+     the fresh selection down to a caret */
+  document.addEventListener("mouseup", function(e){
+    if(armed && e.target === armed){ armed = null; e.preventDefault(); }
+  });
+  document.addEventListener("focusout", function(e){
+    if(armed === e.target) armed = null;
+  });
+})();
 </script>
 </body>
 </html>
