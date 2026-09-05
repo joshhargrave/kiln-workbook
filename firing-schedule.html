@@ -324,6 +324,23 @@
     .chk-lbl{color:#333;font-size:9px}
     .chk-clock{color:#000;font-size:11px;font-weight:700;text-align:left}
   }
+  /* ---- photos ---- */
+  .photo-field{margin-top:18px}
+  .photo-count{font-family:"JetBrains Mono",monospace;color:var(--ink-faint);margin-left:8px;letter-spacing:0.04em}
+  .photo-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px}
+  .photo-strip:empty{display:none}
+  .photo-thumb{position:relative;aspect-ratio:1/1;border:1px solid var(--hairline);border-radius:4px;
+    overflow:hidden;background:var(--raised-2)}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo-del{position:absolute;top:4px;right:4px;width:24px;height:24px;padding:0;border:none;border-radius:50%;
+    background:rgba(0,0,0,0.62);color:#fff;font-size:15px;line-height:24px;text-align:center;cursor:pointer}
+  .photo-del:hover{background:var(--amber);color:var(--void)}
+  .photo-actions{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+  .photo-hint{font-size:10.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-faint)}
+  .print-btn:disabled{opacity:0.35;cursor:default}
+  @media(max-width:640px){ .photo-strip{grid-template-columns:repeat(2,1fr)} }
+  @media print{ .photo-del,.photo-actions{display:none !important}
+    .photo-strip{grid-template-columns:repeat(2,1fr)} }
 </style>
 </head>
 <body>
@@ -474,6 +491,17 @@
 
     <div class="field"><label for="lg_notes">Notes on results: success / failure / ideas for next time</label>
       <textarea id="lg_notes" rows="3" placeholder=""></textarea></div>
+      <div class="field photo-field">
+        <label>Photos<span class="photo-count" id="ph_count">0 / 4</span></label>
+        <div class="photo-strip" id="ph_strip"></div>
+        <div class="photo-actions">
+          <input type="file" id="ph_file" accept="image/jpeg,image/png" multiple
+                 style="display:none" onchange="phPick(this)">
+          <button type="button" class="print-btn" id="ph_add"
+                  onclick="document.getElementById('ph_file').click()">Add photos</button>
+          <span class="photo-hint">jpeg or png &middot; page 2 of the pdf</span>
+        </div>
+      </div>
   </div>
 
   <footer>
@@ -1454,7 +1482,7 @@ const SNAP_FIELDS = ["m_name","m_kiln","m_prog","m_brand","m_thick","m_artist","
   "cfg_lid","cfg_vent","cfg_afap","cfg_anti","lg_desc","lg_notes"];
 
 function captureState(){
-  const st = {unit:UNIT, fields:{}, segs:[], glass:[]};
+  const st = {unit:UNIT, fields:{}, segs:[], glass:[], photos:PHOTOS.slice()};
   SNAP_FIELDS.forEach(id=>{
     const el=$(id); if(!el) return;
     const rec = { v: el.type==="checkbox" ? el.checked : el.value };
@@ -1515,6 +1543,8 @@ function applyState(st){
   });
   sumGlass();
   recalc();   // recomputes times, book/mod colours, and the curve from restored state
+  PHOTOS = Array.isArray(st.photos) ? st.photos.filter(p=>p&&p.src).slice(0,PH_MAX) : [];
+  phRender();
 }
 
 function restoreSnapshot(){
@@ -1546,6 +1576,7 @@ function buildSnapshotHTML(){
   // Snapshots don't carry the ~450KB PDF engine — drop it and its button so saved
   // files stay small. (Reopened snapshots keep Save HTML + Print; use those.)
   clone.querySelectorAll("#pdflib-core,#pdflib-autotable,#btn-pdf").forEach(n=>n.remove());
+  clone.querySelectorAll("#ph_strip").forEach(n=>{ n.innerHTML=""; });  // photos ride in the JSON state, not twice
   const s=document.createElement("script");
   s.type="application/json"; s.id="snapshot-state";
   // \u003c keeps any "<" in notes from prematurely closing the script tag
@@ -1574,6 +1605,103 @@ function saveSnapshot(){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1500);
   toast("Saved  "+filename);
+}
+
+
+/* ---------------- photos ----------------
+   Files are read locally, shrunk through a canvas and held as JPEG data URLs.
+   Nothing is uploaded anywhere. They ride along in the saved HTML snapshot and
+   print on their own page at the end of the PDF. */
+const PH_MAX = 4, PH_EDGE = 1600, PH_QUALITY = 0.82;
+let PHOTOS = [];   // [{src, w, h}]
+
+function phIsHeic(file){
+  return /\.hei[cf]$/i.test(file.name || "") || /hei[cf]/i.test(file.type || "");
+}
+
+function phShrink(file){
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onerror = () => reject(new Error("read"));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("decode"));
+      img.onload = () => {
+        try{
+          const s = Math.min(1, PH_EDGE / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width  = Math.max(1, Math.round(img.width  * s));
+          c.height = Math.max(1, Math.round(img.height * s));
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          resolve({src: c.toDataURL("image/jpeg", PH_QUALITY), w: c.width, h: c.height});
+        }catch(e){ reject(new Error("decode")); }
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+function phRender(){
+  const strip = $("ph_strip"); if(!strip) return;
+  strip.innerHTML = PHOTOS.map((p, i) =>
+    `<div class="photo-thumb"><img src="${p.src}" alt="Photo ${i+1}">` +
+    `<button type="button" class="photo-del" data-ph="${i}" aria-label="Remove photo ${i+1}">&times;</button></div>`
+  ).join("");
+  const c = $("ph_count"); if(c) c.textContent = PHOTOS.length + " / " + PH_MAX;
+  const b = $("ph_add");   if(b) b.disabled = PHOTOS.length >= PH_MAX;
+}
+
+async function phPick(input){
+  const files = [...(input.files || [])];
+  input.value = "";                       // so the same file can be re-picked
+  let heic = 0, bad = 0, full = false;
+  for(const file of files){
+    if(PHOTOS.length >= PH_MAX){ full = true; break; }
+    if(phIsHeic(file)){ heic++; continue; }
+    try{ PHOTOS.push(await phShrink(file)); }
+    catch(e){ bad++; }
+  }
+  phRender();
+  if(heic)      toast(".heic photos aren't supported \u2014 use jpeg or png");
+  else if(bad)  toast(bad === 1 ? "Couldn't read that image" : "Couldn't read " + bad + " images");
+  else if(full) toast(PH_MAX + " photos max");
+}
+
+document.addEventListener("click", function(e){
+  const b = e.target.closest && e.target.closest(".photo-del");
+  if(!b) return;
+  const i = Number(b.dataset.ph);
+  if(Number.isInteger(i)){ PHOTOS.splice(i, 1); phRender(); }
+});
+
+/* page 2 of the PDF: up to four photos, sized to fill without distorting */
+function pdfPhotoPage(doc, photos, L, R, CX, FOOT, filename){
+  const list = (photos || []).filter(p => p && p.src).slice(0, PH_MAX);
+  if(!list.length) return;
+  doc.addPage();
+  doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(20);
+  doc.text("Photos", L, 50);
+  let y = 59; doc.setDrawColor(20); doc.setLineWidth(0.8); doc.line(L, y, R, y); y += 19;
+
+  const BOT = 752, W = R - L, H = BOT - y, GAP = 16;
+  const cols = list.length <= 2 ? 1 : 2;
+  const rows = list.length <= 1 ? 1 : 2;
+  const cw = (W - GAP*(cols-1)) / cols, ch = (H - GAP*(rows-1)) / rows;
+
+  list.forEach((p, i) => {
+    const cx = L + (i % cols) * (cw + GAP);
+    const cy = y + Math.floor(i / cols) * (ch + GAP);
+    const pw = p.w || 4, ph = p.h || 3;
+    const s = Math.min(cw / pw, ch / ph);
+    const w = pw * s, h = ph * s;
+    doc.addImage(p.src, "JPEG", cx + (cw - w)/2, cy + (ch - h)/2, w, h);
+  });
+
+  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(140);
+  doc.text("Joshua Hargrave \u00b7 Kiln Forming Workbook 2026", CX, FOOT, {align:"center"});
+  if(filename){ doc.setFontSize(7); doc.setTextColor(165);
+    doc.text(String(filename), CX, FOOT+11, {align:"center"}); }
 }
 
 /* ---------------- PDF export ----------------
@@ -1617,7 +1745,8 @@ function pdfData(){
     vent:{t:val("cfg_vent"),clock:($("chk_vent_time")||{}).textContent||""},
     proc:{t:($("chk_proc_temp")||{}).textContent||"",clock:($("chk_proc_time")||{}).textContent||""},
     rows, glass, gtotal:($("gw_total")||{}).textContent||"0",
-    desc:val("lg_desc"), notes:val("lg_notes")
+    desc:val("lg_desc"), notes:val("lg_notes"),
+    photos: PHOTOS.slice()
   };
 }
 
@@ -1709,6 +1838,7 @@ function buildPdf(J, data){
   doc.text("Joshua Hargrave · Kiln Forming Workbook 2026", CX, FOOT, {align:"center"});
   if(data.filename){ doc.setFontSize(7); doc.setTextColor(165);
     doc.text(String(data.filename), CX, FOOT+11, {align:"center"}); }
+  pdfPhotoPage(doc, data.photos, L, R, CX, FOOT, data.filename);
   return doc;
 }
 
