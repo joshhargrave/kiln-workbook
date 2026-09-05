@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#141619">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="application-name" content="Kiln Workbook">
+<meta name="apple-mobile-web-app-title" content="Kiln Workbook">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Conversion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#141619; --raised:#1d2025; --raised-2:#22262c;
+    --hairline:#2c3037; --hairline-bright:#3a4049;
+    --ink:#e8e6e1; --ink-dim:#8b9099; --ink-faint:#5f656d;
+    --amber:#ffb040; --amber-fill:rgba(255,176,64,0.09); --amber-line:rgba(255,176,64,0.35);
+    --field-fill:rgba(255,176,64,0.14); --field-line:rgba(255,176,64,0.30);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--void);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;
+    font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;padding:28px 22px 60px}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  .crumb{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--ink-dim);text-decoration:none;margin-bottom:14px;transition:color .15s}
+  .crumb:hover{color:var(--amber)}
+  @media print{.crumb{display:none}}
+
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;
+    padding-bottom:16px;border-bottom:1px solid var(--hairline);margin-bottom:22px}
+  .title-block h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin:0;line-height:1.05}
+  .title-block .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 6px}
+  .title-block .sub{color:var(--ink-dim);font-size:13.5px;margin-top:5px;max-width:64ch}
+
+  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px;margin-bottom:22px}
+  .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
+  .phead .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);letter-spacing:0.1em}
+  .phead h2{font-size:14px;font-weight:600;letter-spacing:0.01em;margin:0;text-transform:uppercase}
+  .phead .hint{margin-left:auto;font-size:11.5px;color:var(--ink-faint)}
+
+  .lead{font-size:13.5px;color:var(--ink-dim);margin:0 0 14px;max-width:70ch}
+
+  .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .field label{font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim)}
+  input,select{font-family:"JetBrains Mono",monospace;font-size:13.5px;color:var(--ink);background:var(--field-fill);
+    border:1px solid var(--field-line);border-radius:2px;padding:7px 8px;width:100%;min-width:0;
+    transition:border-color .12s,box-shadow .12s}
+  input:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-line)}
+  input::placeholder{color:var(--ink-faint)}
+  select{cursor:pointer;-webkit-appearance:none;appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;padding-right:26px}
+  select option{background:#1d2025;color:#e8e6e1}
+
+  footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:26px;padding-top:14px;
+    border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-faint)}
+  footer a{color:var(--ink-faint);text-decoration:none}
+  .pair{display:grid;grid-template-columns:1fr;gap:10px 14px;align-items:end}
+  @media(min-width:520px){.pair{grid-template-columns:1fr 34px 1fr}}
+  .pair .eq{display:none;text-align:center;font-family:"JetBrains Mono",monospace;font-size:16px;
+    color:var(--ink-faint);padding-bottom:8px}
+  @media(min-width:520px){.pair .eq{display:block}}
+  .pair + .pair{margin-top:14px}
+  @media print{
+    @page{size:letter portrait;margin:0.5in}
+    body{background:#fff;color:#000;padding:0;font-size:10px}
+    .wrap{max-width:none}
+    header{border-color:#000;margin-bottom:10px;padding-bottom:8px}
+    .title-block .eyebrow,.title-block .sub,footer a{display:none !important}
+    .title-block h1{font-size:16px;color:#000;margin:0}
+    .panel{background:#fff;border:none;padding:0;margin-bottom:10px}
+    .phead{margin-bottom:5px;border-bottom:1px solid #000}
+    .phead h2{color:#000;font-size:11px}.phead .n{color:#555}
+    .lead{color:#333}
+    input,select{background:#fff !important;border:1px solid #999;color:#000}
+    footer{color:#555;border-color:#000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="index.html" class="crumb">‹ Index</a>
+
+  <header>
+    <div class="title-block">
+      <p class="eyebrow">Kiln Forming Workbook · Reference</p>
+      <h1>Conversion</h1>
+      <p class="sub">Celsius / Fahrenheit and cm / inch</p>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="phead"><span class="n">01</span><h2>Temperature</h2></div>
+    <div class="pair">
+      <div class="field"><label for="t_f">Fahrenheit</label>
+        <input id="t_f" type="text" inputmode="decimal" value="212"></div>
+      <div class="eq">=</div>
+      <div class="field"><label for="t_c">Celsius</label>
+        <input id="t_c" type="text" inputmode="decimal" value="100"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead"><span class="n">02</span><h2>Ramp Rate (degrees per hour)</h2></div>
+    <div class="pair">
+      <div class="field"><label for="r_f">Fahrenheit / hr</label>
+        <input id="r_f" type="text" inputmode="decimal" value="180"></div>
+      <div class="eq">=</div>
+      <div class="field"><label for="r_c">Celsius / hr</label>
+        <input id="r_c" type="text" inputmode="decimal" value="100"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead"><span class="n">03</span><h2>Length</h2></div>
+    <div class="pair">
+      <div class="field"><label for="l_cm">Centimeters</label>
+        <input id="l_cm" type="text" inputmode="decimal" value="10"></div>
+      <div class="eq">=</div>
+      <div class="field"><label for="l_in">Inches</label>
+        <input id="l_in" type="text" inputmode="decimal" value="3.937"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Joshua Hargrave · Kiln Forming Workbook</span>
+    <span><a href="#" onclick="return false">web edition</a></span>
+  </footer>
+</div>
+<script>
+"use strict";
+
+/* Conversions. A rate is a difference, not a point, so it scales by 5/9 with
+   no 32-degree offset. That is the only subtlety here. */
+
+const $ = id => document.getElementById(id);
+
+function parse(v){
+  const n = parseFloat(String(v).replace(/,/g, ""));
+  return isNaN(n) ? null : n;
+}
+function show(x, dp){
+  if(x === null) return "";
+  const r = Math.round(x * Math.pow(10, dp)) / Math.pow(10, dp);
+  return String(r);
+}
+
+/* one direction at a time: only the field being typed in drives the other,
+   so a rounded result never feeds back and drifts */
+let busy = false;
+function link(aId, bId, aToB, bToA, dp){
+  const a = $(aId), b = $(bId);
+  a.addEventListener("input", () => {
+    if(busy) return; busy = true;
+    const v = parse(a.value);
+    b.value = v === null ? "" : show(aToB(v), dp);
+    busy = false;
+  });
+  b.addEventListener("input", () => {
+    if(busy) return; busy = true;
+    const v = parse(b.value);
+    a.value = v === null ? "" : show(bToA(v), dp);
+    busy = false;
+  });
+}
+
+function init(){
+  // temperature: a point on the scale, so the 32 offset applies
+  link("t_f", "t_c", f => (f - 32) * 5/9, c => c * 9/5 + 32, 1);
+  // rate: a span of degrees, so no offset
+  link("r_f", "r_c", f => f * 5/9,        c => c * 9/5,      1);
+  // length
+  link("l_cm", "l_in", cm => cm / 2.54,   inch => inch * 2.54, 3);
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+<script>
+/* ---------------- tap-to-replace ----------------
+   Focusing a field selects its whole contents, so typing overwrites the old
+   value instead of appending to it. Tap a second time to place a caret and
+   edit in place as usual. */
+(function(){
+  var SKIP = {checkbox:1,radio:1,date:1,file:1,button:1,submit:1,reset:1,range:1,color:1,image:1,hidden:1};
+  var armed = null;
+  function eligible(el){
+    return !!el && el.tagName === "INPUT" && !SKIP[el.type] && !el.readOnly && !el.disabled;
+  }
+  function selectAll(el){
+    try{ el.select(); }catch(e){}
+  }
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if(!eligible(el)) return;
+    armed = el;
+    selectAll(el);
+    setTimeout(function(){ if(document.activeElement === el) selectAll(el); }, 0);
+  });
+  /* desktop: the mouseup that completes the click would otherwise collapse
+     the fresh selection down to a caret */
+  document.addEventListener("mouseup", function(e){
+    if(armed && e.target === armed){ armed = null; e.preventDefault(); }
+  });
+  document.addEventListener("focusout", function(e){
+    if(armed === e.target) armed = null;
+  });
+})();
+</script>
+</body>
+</html>

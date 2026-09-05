@@ -46,7 +46,6 @@
     padding-bottom:9px;border-bottom:1px solid var(--hairline)}
   .group-head h2{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:500;letter-spacing:0.14em;
     text-transform:uppercase;color:var(--ink);margin:0}
-  .group-head .count{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);margin-left:auto}
 
   .cards{display:grid;grid-template-columns:1fr;gap:14px}
   @media(min-width:620px){.cards{grid-template-columns:1fr 1fr}}
@@ -59,14 +58,12 @@
   .card.live{cursor:pointer}
   .card.live:hover{transform:translateY(-2px);border-color:var(--amber-line);background:var(--raised-2)}
   .card.live:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-  .card.soon{opacity:0.62}
 
   .card-top{display:flex;align-items:center;gap:10px;margin-bottom:7px}
   .card-top h3{font-size:17px;font-weight:600;letter-spacing:-0.01em;margin:0}
   .tag{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;
     padding:3px 7px;border-radius:2px;margin-left:auto;white-space:nowrap}
   .tag.open{color:var(--void);background:var(--amber);font-weight:700}
-  .tag.soon{color:var(--ink-faint);border:1px solid var(--hairline-bright)}
   .card p{font-size:13px;line-height:1.5;color:var(--ink-dim);margin:0}
 
   footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--hairline);
@@ -111,7 +108,7 @@
   </header>
 
   <section class="group">
-    <div class="group-head"><h2>Schedules</h2><span class="count">2 of 2 live</span></div>
+    <div class="group-head"><h2>Schedules</h2></div>
     <div class="cards">
       <a class="card live" href="firing-schedule.html">
         <div class="card-top"><h3>Firing Schedule (for Casting)</h3><span class="tag open">Open</span></div>
@@ -125,7 +122,7 @@
   </section>
 
   <section class="group">
-    <div class="group-head"><h2>Molds &amp; glass</h2><span class="count">4 of 4 live</span></div>
+    <div class="group-head"><h2>Molds &amp; glass</h2></div>
     <div class="cards">
       <a class="card live" href="investment-calculator.html">
         <div class="card-top"><h3>Investment Calculator (hand-built layers)</h3><span class="tag open">Open</span></div>
@@ -147,29 +144,25 @@
   </section>
 
   <section class="group">
-    <div class="group-head"><h2>Reference</h2><span class="count">4 charts</span></div>
+    <div class="group-head"><h2>Reference</h2></div>
     <div class="cards">
-      <div class="card soon">
-        <div class="card-top"><h3>Conversion</h3><span class="tag soon">Soon</span></div>
-        <p>Fahrenheit / Celsius and cm / inch, for temperatures and ramp rates.</p>
-      </div>
-      <div class="card soon">
-        <div class="card-top"><h3>Process Temps</h3><span class="tag soon">Soon</span></div>
-        <p>Strain, anneal, softening, and every forming temperature for Bullseye and Oceanside, plus the devitrification zone.</p>
-      </div>
-      <div class="card soon">
-        <div class="card-top"><h3>Bullseye Anneal</h3><span class="tag soon">Soon</span></div>
+      <a class="card live" href="conversion.html">
+        <div class="card-top"><h3>Conversion</h3><span class="tag open">Open</span></div>
+        <p>Celsius / Fahrenheit and cm / inch.</p>
+      </a>
+      <a class="card live" href="bullseye-anneal.html">
+        <div class="card-top"><h3>Bullseye Anneal</h3><span class="tag open">Open</span></div>
         <p>Published Bullseye anneal chart by thickness.</p>
-      </div>
-      <div class="card soon">
-        <div class="card-top"><h3>Gaffer Lead Anneal</h3><span class="tag soon">Soon</span></div>
+      </a>
+      <a class="card live" href="gaffer-anneal.html">
+        <div class="card-top"><h3>Gaffer Lead Anneal</h3><span class="tag open">Open</span></div>
         <p>Published Gaffer anneal chart by thickness.</p>
-      </div>
+      </a>
     </div>
   </section>
 
   <section class="group" id="save">
-    <div class="group-head"><h2>Save to your phone</h2><span class="count">one-tap access</span></div>
+    <div class="group-head"><h2>Save to your phone</h2></div>
     <div class="save-panel">
       <p class="save-lead">Add the workbook to your home screen and it opens full screen like an app. <b>Pick your device:</b></p>
       <div class="save-grid">
