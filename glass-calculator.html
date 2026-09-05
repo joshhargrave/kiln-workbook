@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#141619">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="application-name" content="Kiln Workbook">
+<meta name="apple-mobile-web-app-title" content="Kiln Workbook">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Glass Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#141619; --raised:#1d2025; --raised-2:#22262c;
+    --hairline:#2c3037; --hairline-bright:#3a4049;
+    --ink:#e8e6e1; --ink-dim:#8b9099; --ink-faint:#5f656d;
+    --amber:#ffb040; --amber-fill:rgba(255,176,64,0.09); --amber-line:rgba(255,176,64,0.35);
+    --field-fill:rgba(255,176,64,0.14); --field-line:rgba(255,176,64,0.30);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--void);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;
+    font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;padding:28px 22px 60px}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  .crumb{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--ink-dim);text-decoration:none;margin-bottom:14px;transition:color .15s}
+  .crumb:hover{color:var(--amber)}
+  @media print{.crumb{display:none}}
+
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;
+    padding-bottom:16px;border-bottom:1px solid var(--hairline);margin-bottom:22px}
+  .title-block h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin:0;line-height:1.05}
+  .title-block .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--amber);margin:0 0 6px}
+  .title-block .sub{color:var(--ink-dim);font-size:13.5px;margin-top:5px;max-width:64ch}
+
+  .panel{background:var(--raised);border:1px solid var(--hairline);border-radius:4px;padding:18px 18px 20px;margin-bottom:22px}
+  .panel > .phead{display:flex;align-items:baseline;gap:10px;margin:-2px 0 14px}
+  .phead .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);letter-spacing:0.1em}
+  .phead h2{font-size:14px;font-weight:600;letter-spacing:0.01em;margin:0;text-transform:uppercase}
+
+  .lead{font-size:13.5px;color:var(--ink-dim);margin:0 0 14px;max-width:70ch}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:12px 16px}
+  @media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+  .grid + .grid{margin-top:12px}
+  .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .field label{font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim)}
+  input,select{font-family:"JetBrains Mono",monospace;font-size:13.5px;color:var(--ink);background:var(--field-fill);
+    border:1px solid var(--field-line);border-radius:2px;padding:7px 8px;width:100%;min-width:0;
+    transition:border-color .12s,box-shadow .12s}
+  input:focus,select:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-line)}
+  input::placeholder{color:var(--ink-faint)}
+  input:disabled{opacity:0.4}
+  select{cursor:pointer;-webkit-appearance:none;appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;padding-right:26px}
+  select option{background:#1d2025;color:#e8e6e1}
+  .field.off label{opacity:0.5}
+
+  .switch{display:flex;align-items:center;gap:9px;align-self:end;padding-bottom:7px;min-width:0}
+  .switch input{width:17px;height:17px;flex:0 0 auto;accent-color:var(--amber);padding:0;background:none;border:none}
+  .switch label{font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);cursor:pointer}
+  .switch label .why{text-transform:none;letter-spacing:0;color:var(--ink-faint)}
+
+  .pr{margin-top:16px;background:var(--raised-2);border:1px solid var(--amber-line);background:var(--amber-fill);
+    border-radius:4px;padding:15px 17px;display:flex;flex-direction:column;gap:8px}
+  .pr .k{font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-dim)}
+  .pr .v{font-family:"JetBrains Mono",monospace;font-size:34px;font-weight:600;color:var(--amber);line-height:1;font-variant-numeric:tabular-nums}
+  .pr .v small{font-size:14px;color:var(--ink-dim);font-weight:400}
+  .pr .s{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .pr .s .plus{color:var(--amber)}
+
+  footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:26px;padding-top:14px;
+    border-top:1px solid var(--hairline);font-size:12px;color:var(--ink-faint)}
+  footer a{color:var(--ink-faint);text-decoration:none}
+
+  @media print{
+    @page{size:letter portrait;margin:0.5in}
+    body{background:#fff;color:#000;padding:0;font-size:11px}
+    .wrap{max-width:none}
+    header{border-color:#000;margin-bottom:10px;padding-bottom:8px}
+    .title-block .eyebrow,.title-block .sub,footer a{display:none !important}
+    .title-block h1{font-size:16px;color:#000;margin:0}
+    .panel{background:#fff;border:none;padding:0;margin-bottom:10px}
+    .phead{margin-bottom:5px;border-bottom:1px solid #000}
+    .phead h2{color:#000;font-size:11px}.phead .n{color:#555}
+    .lead{color:#333}
+    input,select{background:#fff !important;border:1px solid #999;color:#000}
+    .pr{background:#fff;border-color:#000}
+    .pr .k{color:#333}.pr .v{color:#000}.pr .s{color:#333}
+    footer{color:#555;border-color:#000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="index.html" class="crumb">‹ Index</a>
+
+  <header>
+    <div class="title-block">
+      <p class="eyebrow">Kiln Forming Workbook · Molds &amp; glass</p>
+      <h1>Glass Calculator</h1>
+      <p class="sub">How much glass is needed for your casting based on water weight.</p>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="phead"><span class="n">01</span><h2>Water Weight</h2></div>
+    <p class="lead">Pour water into the cavity of the damp mold up to the height you want the glass to fill. How much water did you use in grams?</p>
+
+    <div class="grid">
+      <div class="field"><label for="vol">Water (g)</label>
+        <input id="vol" type="text" inputmode="decimal" min="0" step="1" value="500"></div>
+      <div class="field"><label for="glass">Glass</label>
+        <select id="glass">
+          <option value="be" selected>Bullseye · 2.5 specific gravity</option>
+          <option value="gf">Gaffer leaded · 3.6 specific gravity</option>
+        </select></div>
+    </div>
+
+    <div class="grid">
+      <div class="switch">
+        <input type="checkbox" id="fp">
+        <label for="fp">Flowerpot crucible <span class="why">(glass clings to pot)</span></label>
+      </div>
+      <div class="field" id="fpct_field"><label for="fpct">Extra allowance (%)</label>
+        <input id="fpct" type="text" inputmode="decimal" min="0" step="1" value="10" disabled></div>
+    </div>
+
+    <div class="pr">
+      <span class="k" id="r_label">Bullseye · glass needed</span>
+      <span class="v"><span id="r_g">—</span> <small>g</small></span>
+      <span class="s"><span id="r_lb">—</span> lb<span id="r_note"></span></span>
+    </div>
+  </div>
+
+  <footer>
+    <span>Joshua Hargrave · Kiln Forming Workbook</span>
+    <span><a href="#" onclick="return false">web edition</a></span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* Glass Calculator — water weight from the mold to glass load.
+   Grams of water equal cm3 of void, so glass = water weight x specific gravity. */
+
+const GLASS = {
+  be: {name:"Bullseye",      sg:2.5},
+  gf: {name:"Gaffer leaded", sg:3.6}
+};
+const LB_PER_G = 453.592;
+
+const $ = id => document.getElementById(id);
+function num(id){ const v = parseFloat($(id).value); return (isNaN(v) || v < 0) ? 0 : v; }
+function fmtG(x){ return Math.round(x).toLocaleString(); }
+function fmtLb(x){ return (Math.round(x*100)/100).toFixed(2); }
+
+function recalc(){
+  const g   = GLASS[$("glass").value] || GLASS.be;
+  const vol = num("vol");
+  const on  = $("fp").checked;
+  const pct = on ? num("fpct") : 0;
+
+  $("fpct").disabled = !on;
+  $("fpct_field").classList.toggle("off", !on);
+
+  const base = vol * g.sg;
+  const load = base * (1 + pct/100);
+
+  $("r_label").textContent = g.name + " \u00b7 glass needed";
+  $("r_g").textContent  = fmtG(load);
+  $("r_lb").textContent = fmtLb(load / LB_PER_G);
+  $("r_note").innerHTML = on
+    ? `  <span class="plus">\u00b7 ${fmtG(base)} g + ${Math.round(pct*10)/10}%</span>`
+    : "";
+}
+
+function init(){
+  ["vol","fpct"].forEach(id => $(id).addEventListener("input", recalc));
+  ["glass","fp"].forEach(id => $(id).addEventListener("change", recalc));
+  recalc();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+<script>
+/* ---------------- tap-to-replace ----------------
+   Focusing a field selects its whole contents, so typing overwrites the old
+   value instead of appending to it. Tap a second time to place a caret and
+   edit in place as usual. */
+(function(){
+  var SKIP = {checkbox:1,radio:1,date:1,file:1,button:1,submit:1,reset:1,range:1,color:1,image:1,hidden:1};
+  var armed = null;
+  function eligible(el){
+    return !!el && el.tagName === "INPUT" && !SKIP[el.type] && !el.readOnly && !el.disabled;
+  }
+  function selectAll(el){
+    try{ el.select(); }catch(e){}
+  }
+  document.addEventListener("focusin", function(e){
+    var el = e.target;
+    if(!eligible(el)) return;
+    armed = el;
+    selectAll(el);
+    setTimeout(function(){ if(document.activeElement === el) selectAll(el); }, 0);
+  });
+  /* desktop: the mouseup that completes the click would otherwise collapse
+     the fresh selection down to a caret */
+  document.addEventListener("mouseup", function(e){
+    if(armed && e.target === armed){ armed = null; e.preventDefault(); }
+  });
+  document.addEventListener("focusout", function(e){
+    if(armed === e.target) armed = null;
+  });
+})();
+</script>
+</body>
+</html>
