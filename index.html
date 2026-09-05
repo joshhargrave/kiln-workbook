@@ -92,6 +92,17 @@
   .gi{font-family:"JetBrains Mono",monospace;font-size:11px;padding:1px 5px;border:1px solid var(--hairline-bright);
     border-radius:3px;color:var(--ink);white-space:nowrap}
   .save-grid[data-active] .save-col{opacity:.5}
+  /* --- Ideas & feedback --- */
+  .fb-panel{background:var(--raised);border:1px solid var(--hairline);border-radius:5px;padding:20px}
+  .fb-lead{margin:0 0 16px;color:var(--ink-dim);font-size:14px;line-height:1.55;max-width:72ch}
+  .fb-lead b{color:var(--ink);font-weight:500}
+  .fb-btn{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:0.08em;
+    text-transform:uppercase;text-decoration:none;color:var(--void);background:var(--amber);font-weight:700;
+    border:1px solid var(--amber);border-radius:3px;padding:11px 20px;transition:opacity .16s}
+  .fb-btn:hover{opacity:0.85}
+  .fb-btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  @media(max-width:620px){.fb-btn{display:block;text-align:center}}
+
   .save-grid[data-active="ios"] .save-col[data-os="ios"],
   .save-grid[data-active="android"] .save-col[data-os="android"],
   .save-grid[data-active="desktop"] .save-col[data-os="desktop"]{
@@ -194,6 +205,14 @@
           <p class="note">The bookmark keeps its Kiln Workbook icon in your bar.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="group" id="feedback">
+    <div class="group-head"><h2>Ideas &amp; feedback</h2></div>
+    <div class="fb-panel">
+      <p class="fb-lead">Found a bug, or want a tool that isn't here yet? <b>Tell me.</b></p>
+      <a class="fb-btn" href="https://docs.google.com/forms/d/e/1FAIpQLScoWFPG0M0TwWc2IFaIJqH63d6Ov-EjGngHmehnV-6qFWy9cg/viewform" target="_blank" rel="noopener">Open the feedback form</a>
     </div>
   </section>
 
