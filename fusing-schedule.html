@@ -302,6 +302,8 @@
     table.glass td input,table.glass td select{background:#fff !important;padding:11px 5px;color:#000}
     table.glass tr.total .lbl,table.glass tr.total .val{color:#000;padding-top:12px}
   }
+  .field.off{opacity:.4}
+  .field.off select{cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -856,7 +858,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
 /* ---------------- reference data (all Fahrenheit) ---------------- */
 const GLASSES = ["Bullseye","Oceanside 96","Float (window)","Blown furnace (Spruce Pine)"];
-const PROCESSES = ["Slump","Tack fuse","Contour fuse","Full fuse","Fire polish","Dropout"];
+const PROCESSES = ["Slump","Tack fuse","Contour fuse","Full fuse","Fire polish","Dropout","Vitrigraph"];
 
 // process target temperatures by glass
 const TEMP = {
@@ -887,6 +889,14 @@ const THK = [
 const PROC_KEY = {"Slump":"slump","Tack fuse":"tack","Contour fuse":"contour","Full fuse":"full","Fire polish":"firepolish","Dropout":"dropout"};
 // single-ramp processes: one ramp to process temp + hold, no bubble-squeeze / fuse segment
 const SINGLE_RAMP = new Set(["Slump","Dropout"]);
+
+// vitrigraph: a fixed two-segment pull schedule. Independent of glass, thickness
+// and caution, and with no anneal tail — the cane is drawn out of the kiln hot,
+// not cooled in it.
+const VITRIGRAPH = [
+  {stage:"Heat & equalize",       rate:"200",  target:"1250", hh:"1", hm:"0"},
+  {stage:"Pull temp \u2014 hold & pull", rate:"9999", target:"1510", hh:"3", hm:"0"}
+];
 
 const N_ROWS = 12;
 
@@ -1009,9 +1019,21 @@ function clampThk(mm){ return Math.min(12, Math.max(3, mm)); }
 function thkBracket(mm){ const c=clampThk(mm); return THK.find(t=>t.mm>=c) || THK[THK.length-1]; }
 function holdParts(minutes){ return {hh:String(Math.floor(minutes/60)), hm:String(minutes%60)}; }
 
+/* Vitrigraph ignores thickness and caution, so grey those two out rather than
+   let them look like they still drive the schedule. */
+function syncRecipeUI(){
+  const fixed = $("r_process").value === "Vitrigraph";
+  ["r_thk","r_caution"].forEach(id=>{
+    const el = $(id); if(!el) return;
+    el.disabled = fixed;
+    const f = el.closest(".field"); if(f) f.classList.toggle("off", fixed);
+  });
+}
+
 function buildRecipe(){
   const glass = $("r_glass").value;
   const process = $("r_process").value;
+  if(process === "Vitrigraph") return VITRIGRAPH.map(seg => ({...seg}));
   const mmRaw = parseFloat($("r_thk").value);
   const mm = isNaN(mmRaw) ? 6 : mmRaw;
   const caution = $("r_caution").value;
@@ -1057,6 +1079,7 @@ function generate(){
   }
   recalc();
   renderRefTables();
+  syncRecipeUI();
 }
 
 /* ---------------- build segment rows ---------------- */
@@ -1410,6 +1433,7 @@ function applyState(st){
   sumGlass();
   renderRefTables();
   recalc();
+  syncRecipeUI();
 }
 
 function restoreSnapshot(){
